@@ -2,13 +2,36 @@
 
 use std::sync::Arc;
 
+use serde::Serialize;
+use specta::Type;
+
 use super::book::ProfileBook;
 use super::keys::{KeyStatus, ProfileKeys};
 use super::model::{ConnectionProfile, is_valid_id};
+use super::preset::ProfilePreset;
 use crate::api::Connection;
 use crate::error::AppError;
 use crate::secrets::SecretStore;
 use crate::settings::SettingsStore;
+
+/// プロファイルを追加した結果。画面が、追加したものを開けるようにIDを添える。
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct ProfileAdded {
+    pub book: ProfileBook,
+    pub id: String,
+}
+
+/// 既存と重ならない新しいID(`p` + 時刻のナノ秒の16進。万一重なれば1つずつずらす)。
+fn new_profile_id(book: &ProfileBook) -> String {
+    let nanos = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_nanos());
+    (0u128..)
+        .map(|offset| format!("p{:x}", nanos + offset))
+        .find(|id| book.find(id).is_none())
+        .expect("いつかは空きが見つかる")
+}
 
 pub struct ProfileService {
     store: Arc<SettingsStore>,
@@ -32,6 +55,41 @@ impl ProfileService {
     pub fn update_profile(&self, input: &ConnectionProfile) -> Result<ProfileBook, AppError> {
         let profile = input.validated()?;
         self.store.update(|book| book.replace(profile))
+    }
+
+    /// 雛形から新しいプロファイルを末尾に追加する(使用中は変えない)。
+    /// 名前は既存と重ならないようにする。追加後の一覧と、新しいプロファイルのIDを返す。
+    pub fn add_profile(&self, preset: ProfilePreset) -> Result<ProfileAdded, AppError> {
+        let mut id = String::new();
+        let book = self.store.update(|book| {
+            id = new_profile_id(book);
+            let name = book.unique_name(preset.label());
+            book.add(preset.profile(id.clone(), name))
+        })?;
+        Ok(ProfileAdded { book, id })
+    }
+
+    /// プロファイルを削除し、そのAPIキーも消す。最後の1件は削除できない。
+    pub fn remove_profile(&self, profile_id: &str) -> Result<ProfileBook, AppError> {
+        let book = self.store.update(|book| book.remove(profile_id))?;
+        // 設定の保存に成功してから消す(キーだけ先に消えて、プロファイルが残る状態を避ける)
+        self.keys.clear(profile_id);
+        Ok(book)
+    }
+
+    /// 使用中のプロファイルを切り替える。
+    pub fn set_active(&self, profile_id: &str) -> Result<ProfileBook, AppError> {
+        self.store.update(|book| book.set_active(profile_id))
+    }
+
+    /// プロファイルのモデルを選び、そのプロファイルを使用中にする。`None` ならサーバーの既定。
+    pub fn select_model(
+        &self,
+        profile_id: &str,
+        model: Option<&str>,
+    ) -> Result<ProfileBook, AppError> {
+        self.store
+            .update(|book| book.select_model(profile_id, model))
     }
 
     /// 保存済みのプロファイルに接続するための情報(キーを含む)。
@@ -236,5 +294,93 @@ mod tests {
         };
 
         assert!(service.draft_connection(&draft, None).is_err());
+    }
+
+    #[test]
+    fn adding_a_profile_uses_the_preset_and_a_unique_name_and_id() {
+        let dir = tempfile::tempdir().unwrap();
+        let service = service(dir.path(), &MemoryStore::default());
+
+        let first = service.add_profile(ProfilePreset::Ollama).unwrap();
+        let second = service.add_profile(ProfilePreset::Ollama).unwrap();
+
+        assert_ne!(first.id, second.id);
+        assert!(is_valid_id(&first.id));
+        let added = second.book.find(&second.id).unwrap();
+        assert_eq!(added.name, "Ollama 2");
+        assert_eq!(added.base_url, "http://localhost:11434/v1");
+        assert_eq!(second.book.profiles.len(), 3);
+        // 追加しても使用中は変わらない
+        assert_eq!(second.book.active_id, "default");
+        assert_eq!(service.book().unwrap(), second.book);
+    }
+
+    #[test]
+    fn removing_a_profile_deletes_its_key_too() {
+        let dir = tempfile::tempdir().unwrap();
+        let secrets = MemoryStore::default();
+        let service = service(dir.path(), &secrets);
+        let added = service.add_profile(ProfilePreset::Vllm).unwrap();
+        service.set_key(&added.id, "sk-extra").unwrap();
+        service.set_key("default", "sk-default").unwrap();
+
+        let book = service.remove_profile(&added.id).unwrap();
+
+        assert!(book.find(&added.id).is_none());
+        assert_eq!(
+            secrets.value(&format!("profile:{}:api_key", added.id)),
+            None
+        );
+        assert_eq!(
+            secrets.value("profile:default:api_key").as_deref(),
+            Some("sk-default")
+        );
+    }
+
+    #[test]
+    fn the_last_profile_is_kept_together_with_its_key() {
+        let dir = tempfile::tempdir().unwrap();
+        let secrets = MemoryStore::default();
+        let service = service(dir.path(), &secrets);
+        service.set_key("default", "sk-default").unwrap();
+
+        let error = service.remove_profile("default").unwrap_err();
+
+        assert_eq!(error.kind, AppErrorKind::InvalidInput);
+        assert_eq!(service.key_status("default").unwrap(), KeyStatus::Saved);
+    }
+
+    #[test]
+    fn selecting_a_model_of_another_profile_switches_the_active_one() {
+        let dir = tempfile::tempdir().unwrap();
+        let service = service(dir.path(), &MemoryStore::default());
+        let added = service.add_profile(ProfilePreset::LlamaCpp).unwrap();
+
+        let book = service.select_model(&added.id, Some("qwen3")).unwrap();
+
+        assert_eq!(book.active_id, added.id);
+        assert_eq!(
+            book.find(&added.id).unwrap().selected_model.as_deref(),
+            Some("qwen3")
+        );
+        assert_eq!(service.book().unwrap(), book);
+        assert_eq!(
+            service.connection(&added.id).unwrap().model,
+            "qwen3".to_owned()
+        );
+    }
+
+    #[test]
+    fn set_active_persists_and_rejects_unknown_profiles() {
+        let dir = tempfile::tempdir().unwrap();
+        let service = service(dir.path(), &MemoryStore::default());
+        let added = service.add_profile(ProfilePreset::Custom).unwrap();
+
+        assert_eq!(service.set_active(&added.id).unwrap().active_id, added.id);
+        assert_eq!(service.book().unwrap().active_id, added.id);
+        assert_eq!(
+            service.set_active("missing").unwrap_err().kind,
+            AppErrorKind::NotFound
+        );
     }
 }
