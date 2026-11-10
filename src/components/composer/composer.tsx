@@ -55,7 +55,8 @@ export function Composer({
 
   return (
     <form ref={formRef} onSubmit={submit} className="w-full">
-      <InputGroup className="rounded-2xl bg-card shadow-sm">
+      {/* 枠は目立たせず、フォーカス時は枠の色だけを少し変える(太いリングは出さない) */}
+      <InputGroup className="rounded-3xl border-border bg-card shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/60 focus-within:shadow-md has-[[data-slot=input-group-control]:focus-visible]:border-ring/60 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
         <InputGroupTextarea
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -64,9 +65,9 @@ export function Composer({
           aria-label="メッセージ"
           rows={1}
           autoFocus={autoFocus}
-          className="max-h-60 min-h-14 [field-sizing:content]"
+          className="max-h-60 min-h-10 px-4 pt-4 pb-1 text-base leading-6 md:text-base"
         />
-        <InputGroupAddon align="block-end" className="pt-1">
+        <InputGroupAddon align="block-end" className="px-3 pt-0 pb-3">
           {busy ? (
             <InputGroupButton
               variant="default"
