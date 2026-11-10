@@ -27,6 +27,17 @@ export function toStoredMessages(messages: readonly UIMessage[]): unknown[] {
   return JSON.parse(JSON.stringify(settled)) as unknown[];
 }
 
+/** アシスタントの返答に、表示できる本文(空白だけでない)があるか。 */
+export function hasAssistantReply(messages: readonly UIMessage[]): boolean {
+  return messages.some(
+    (message) =>
+      message.role === "assistant" &&
+      message.parts.some(
+        (part) => part.type === "text" && part.text.trim() !== "",
+      ),
+  );
+}
+
 function isMessage(value: unknown): value is UIMessage {
   if (typeof value !== "object" || value === null) return false;
   const message = value as Record<string, unknown>;

@@ -24,7 +24,7 @@ export function ConversationView({
 }: ConversationViewProps) {
   const { profile } = useActiveProfile();
   const session = useChatSession(profile?.id, { id, initialMessages });
-  useAutosaveConversation(id, session.messages, session.status);
+  useAutosaveConversation(id, session.messages, session.status, profile?.id);
 
   const composer = (
     <Composer

@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import { fromStoredMessages } from "@/lib/stored-messages";
 import {
   deleteConversation,
+  generateConversationTitle,
   listHistory,
   loadConversation,
   renameConversation,
@@ -37,17 +38,36 @@ export function useConversation(id: string, enabled: boolean) {
   return { ...query, messages };
 }
 
+interface SaveVariables {
+  id: string;
+  messages: unknown[];
+  /** 指定すると、保存できたあとにこの接続先のモデルでAIにタイトルを考えさせる。 */
+  titleProfileId?: string;
+}
+
 /**
  * 会話を保存する。画面から外れたあとも完了まで走るよう、結果の処理は呼び出し側のコールバックではなくここに置く。
  * 保存できなくても会話は続けられるので、エラーはログに残すだけにする(次の保存でまるごと書き直される)。
+ *
+ * タイトルの生成は保存の完了を待たせない。失敗しても、保存時に付いた「最初の発言から作ったタイトル」が残る。
  */
 export function useSaveConversation() {
   const queryClient = useQueryClient();
+  const refreshList = () =>
+    queryClient.invalidateQueries({ queryKey: historyKey });
   return useMutation({
-    mutationFn: ({ id, messages }: { id: string; messages: unknown[] }) =>
+    mutationFn: ({ id, messages }: SaveVariables) =>
       saveConversation(id, messages),
+    onSuccess: (_saved, { id, titleProfileId }) => {
+      if (titleProfileId === undefined) return;
+      generateConversationTitle(id, titleProfileId)
+        .then(refreshList)
+        .catch((error) =>
+          console.warn("タイトルを生成できませんでした", error),
+        );
+    },
     onError: (error) => console.error("会話を保存できませんでした", error),
-    onSettled: () => queryClient.invalidateQueries({ queryKey: historyKey }),
+    onSettled: refreshList,
   });
 }
 

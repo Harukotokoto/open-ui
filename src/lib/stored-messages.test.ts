@@ -1,6 +1,10 @@
 import type { UIMessage } from "ai";
 import { describe, expect, it } from "vitest";
-import { fromStoredMessages, toStoredMessages } from "@/lib/stored-messages";
+import {
+  fromStoredMessages,
+  hasAssistantReply,
+  toStoredMessages,
+} from "@/lib/stored-messages";
 
 const user: UIMessage = {
   id: "u1",
@@ -77,5 +81,28 @@ describe("fromStoredMessages", () => {
     ];
 
     expect(fromStoredMessages(stored)).toEqual([user]);
+  });
+});
+
+describe("hasAssistantReply", () => {
+  const reply = (text: string): UIMessage => ({
+    id: "a1",
+    role: "assistant",
+    parts: [{ type: "text", text, state: "done" }],
+  });
+
+  it("本文のある返答があれば真", () => {
+    expect(hasAssistantReply([user, reply("やあ")])).toBe(true);
+  });
+
+  it("返答が無い・空白だけ・思考だけなら偽", () => {
+    const thinkingOnly: UIMessage = {
+      id: "a2",
+      role: "assistant",
+      parts: [{ type: "reasoning", text: "考え中", state: "done" }],
+    };
+    expect(hasAssistantReply([user])).toBe(false);
+    expect(hasAssistantReply([user, reply(" \n")])).toBe(false);
+    expect(hasAssistantReply([user, thinkingOnly])).toBe(false);
   });
 });
