@@ -15,7 +15,7 @@
     "test:watch": "vitest",
     "lint": "biome check .",
     "format": "biome check --write .",
-    "bindings": "cargo run -p open-ui --bin export-bindings",
+    "bindings": "cargo run -p open-ui --features export-bindings --bin export-bindings",
     "rust:fmt": "cargo fmt --all",
     "rust:lint": "cargo clippy --workspace --all-targets -- -D warnings",
     "rust:test": "cargo test --workspace"
