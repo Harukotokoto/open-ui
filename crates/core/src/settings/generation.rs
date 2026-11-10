@@ -72,10 +72,7 @@ impl GenerationSettings {
             .join("\n\n");
         let mut all = Vec::with_capacity(messages.len() + 1);
         if !system.is_empty() {
-            all.push(WireMessage {
-                role: Role::System,
-                content: system,
-            });
+            all.push(WireMessage::text(Role::System, system));
         }
         all.extend_from_slice(messages);
         all
@@ -88,10 +85,7 @@ mod tests {
     use crate::error::AppErrorKind;
 
     fn user(text: &str) -> Vec<WireMessage> {
-        vec![WireMessage {
-            role: Role::User,
-            content: text.into(),
-        }]
+        vec![WireMessage::text(Role::User, text.into())]
     }
 
     #[test]

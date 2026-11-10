@@ -16,7 +16,7 @@ mod types;
 
 pub use active::{ActiveGuard, ActiveRequests};
 pub use connection::Connection;
-pub use types::{ChatEvent, Emit, GenerationParams, ProviderKind, Role, WireMessage};
+pub use types::{ChatEvent, Emit, GenerationParams, ProviderKind, Role, WireImage, WireMessage};
 
 use std::time::Duration;
 
@@ -135,10 +135,7 @@ mod tests {
     }
 
     fn user() -> Vec<WireMessage> {
-        vec![WireMessage {
-            role: Role::User,
-            content: "hi".into(),
-        }]
+        vec![WireMessage::text(Role::User, "hi".into())]
     }
 
     #[tokio::test]

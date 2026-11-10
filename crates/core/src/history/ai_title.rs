@@ -22,16 +22,13 @@ pub fn title_request(messages: &[Value]) -> Option<Vec<WireMessage>> {
     let user = first_text(messages, "user")?;
     let assistant = first_text(messages, "assistant")?;
     Some(vec![
-        WireMessage {
-            role: Role::System,
-            content: INSTRUCTION.to_owned(),
-        },
-        WireMessage {
-            role: Role::User,
-            content: format!(
+        WireMessage::text(Role::System, INSTRUCTION.to_owned()),
+        WireMessage::text(
+            Role::User,
+            format!(
                 "<会話>\n[ユーザー]\n{user}\n\n[アシスタント]\n{assistant}\n</会話>\n\nこの会話のタイトルだけを出力してください。"
             ),
-        },
+        ),
     ])
 }
 

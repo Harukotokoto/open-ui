@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use open_ui_core::api::ApiClient;
+use open_ui_core::attachments::AttachmentStore;
 use open_ui_core::error::AppError;
 use open_ui_core::history::HistoryStore;
 use open_ui_core::profiles::ProfileService;
@@ -17,14 +18,19 @@ pub struct AppState {
     pub settings: Arc<SettingsStore>,
     /// チャット履歴(`<データディレクトリ>/history/<id>.json`)
     pub history: Arc<HistoryStore>,
+    /// 添付ファイル(`<データディレクトリ>/history/<会話ID>/attachments/`)
+    pub attachments: Arc<AttachmentStore>,
 }
 
 impl AppState {
     /// `data_dir` はアプリのデータディレクトリ。
     pub fn new(data_dir: PathBuf) -> Result<Self, AppError> {
+        // 添付は会話のJSONと同じディレクトリの、会話IDのフォルダに置く
+        let attachments = Arc::new(AttachmentStore::new(data_dir.join("history")));
         let history = Arc::new(HistoryStore::new(data_dir.join("history")));
         let settings = Arc::new(SettingsStore::new(data_dir));
         Ok(Self {
+            attachments,
             history,
             api: ApiClient::new()?,
             profiles: Arc::new(ProfileService::new(

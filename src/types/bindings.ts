@@ -7,6 +7,20 @@ export const commands = {
 	/**  アプリ名とバージョンを返す。 */
 	appInfo: () => __TAURI_INVOKE<AppInfo>("app_info"),
 	/**
+	 *  画面にドロップされた・`<input type="file">` で選ばれたファイルを保存する。
+	 *  `data` はbase64。種類は中身から決めるので、ブラウザが付けた型は受け取らない。
+	 */
+	attachmentAdd: (conversationId: string, filename: string, data: string) => typedError<AttachmentInfo, AppError>(__TAURI_INVOKE("attachment_add", { conversationId, filename, data })),
+	/**
+	 *  OSのダイアログでファイルを選ばせて、保存する。キャンセルしたら、どちらも空。
+	 *  1件が読めなくても他は保存し、読めなかったものは `failed` で返す。
+	 */
+	attachmentPick: (conversationId: string) => typedError<AttachmentPick, AppError>(__TAURI_INVOKE("attachment_pick", { conversationId })),
+	/**  入力欄で外した添付を消す。すでに無ければ何もしない。 */
+	attachmentRemove: (conversationId: string, id: string) => typedError<null, AppError>(__TAURI_INVOKE("attachment_remove", { conversationId, id })),
+	/**  画像の中身(サムネイルの表示用)。 */
+	attachmentImage: (conversationId: string, id: string) => typedError<AttachmentImage, AppError>(__TAURI_INVOKE("attachment_image", { conversationId, id })),
+	/**
 	 *  返答の生成を始め、完了・中断・失敗まで `on_event` にイベントを流す。
 	 * 
 	 *  失敗(接続先が無い・接続できない・サーバーのエラーなど)も、最後の `Error` イベントで伝える。
@@ -103,6 +117,46 @@ export type AppInfo = {
 	version: string,
 };
 
+/**  読み込めなかったファイル1件。 */
+export type AttachmentFailure = {
+	filename: string,
+	message: string,
+};
+
+/**  画像の中身。サムネイルの表示に使う。 */
+export type AttachmentImage = {
+	mediaType: string,
+	/**  base64(`data:` URL の本体部分) */
+	data: string,
+};
+
+/**  保存した添付1件の情報。フロントが会話に残す(`FileUIPart`)ための値。 */
+export type AttachmentInfo = {
+	/**  Rustが発行するUUID。保存先のファイル名にもなる */
+	id: string,
+	/**  表示用の名前。パスの区切りなどは取り除いてあり、保存先のパスには使わない */
+	filename: string,
+	mediaType: string,
+	kind: AttachmentKind,
+	/**  保存したサイズ(バイト)。画像は縮小後 */
+	size: number,
+};
+
+/**  添付の種類。中身を見て決める(拡張子やブラウザが付けた型は信用しない)。 */
+export type AttachmentKind = 
+/**  画像。マルチモーダルとして送る */
+"image" | 
+/**  テキスト・コード。本文をプロンプトに埋め込む */
+"text" | 
+/**  PDF。取り出したテキストをプロンプトに埋め込む */
+"pdf";
+
+/**  ファイルを選ぶダイアログの結果。選べたものと、読み込めなかったものを分けて返す。 */
+export type AttachmentPick = {
+	added: AttachmentInfo[],
+	failed: AttachmentFailure[],
+};
+
 /**  フロントへ流すチャットのイベント。1リクエストにつき最後に `Done` か `Error` が1回届く。 */
 export type ChatEvent = 
 /**  本文の増分 */
@@ -123,6 +177,18 @@ estimated: boolean } |
 { type: "error"; message: string };
 
 /**
+ *  フロントが送る1メッセージ。思考(reasoning)は含めない。
+ * 
+ *  添付は中身ではなく、保存済みの添付のIDだけを渡す(中身は送信時にRustが読む)。
+ */
+export type ChatMessage = {
+	role: Role,
+	content: string,
+	/**  添付のID。ユーザーのメッセージだけが持てる */
+	attachments?: string[],
+};
+
+/**
  *  フロントが `chat_start` に渡すリクエスト。
  * 
  *  サーバーのURL・APIキー・モデルは含めない。`profile_id` からRustが引く。
@@ -131,8 +197,9 @@ export type ChatRequest = {
 	/**  フロントが発行するID(UUID)。中断の対象を指す */
 	requestId: string,
 	profileId: string,
-	/**  思考(reasoning)は含めない */
-	messages: WireMessage[],
+	/**  添付の置き場になる会話のID。添付があるメッセージを送るときに要る */
+	conversationId?: string | null,
+	messages: ChatMessage[],
 	/**
 	 *  画面が描ける書式(独自コンポーネントなど)をAIに伝える説明。システムプロンプトの後ろに足す。
 	 *  画面の部品と同じ場所で管理するため、フロントが渡す。無ければ足さない
@@ -257,16 +324,6 @@ export type UiSettings = {
 	theme?: Theme,
 	/**  入力欄でShift+Enterを押したときの動き */
 	shiftEnter?: ShiftEnterBehavior,
-};
-
-/**
- *  サーバーへ送る1メッセージ。思考(reasoning)は含めない。
- * 
- *  ⑤(画像)・⑦(ツール呼び出し)でパーツ列へ拡張する。
- */
-export type WireMessage = {
-	role: Role,
-	content: string,
 };
 
 /* Tauri Specta runtime */
