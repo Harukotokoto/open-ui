@@ -1,0 +1,14 @@
+[package]
+name = "open-ui-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "open-ui の Tauri 非依存のロジックと型(API・履歴・秘密情報など)"
+
+[dependencies]
+serde.workspace = true
+specta.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

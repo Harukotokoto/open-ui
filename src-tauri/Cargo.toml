@@ -1,0 +1,24 @@
+[package]
+name = "open-ui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+description = "OpenAI互換サーバー向けのデスクトップUIクライアント"
+default-run = "open-ui"
+
+[lib]
+# Windows で bin 名と衝突しないよう、`_lib` を付ける
+# https://github.com/rust-lang/cargo/issues/8519
+name = "open_ui_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+open-ui-core = { path = "../crates/core" }
+tauri = { version = "2", features = [] }
+specta.workspace = true
+specta-typescript.workspace = true
+tauri-specta.workspace = true
