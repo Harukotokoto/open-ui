@@ -1,34 +1,53 @@
 import { SettingsIcon } from "lucide-react";
 import { useState } from "react";
-import { MessageList } from "@/components/chat/message-list";
-import { Composer } from "@/components/composer/composer";
-import { ModelSelector } from "@/components/composer/model-selector";
+import { ConversationLoadError } from "@/components/chat/conversation-load-error";
+import { ConversationView } from "@/components/chat/conversation-view";
 import { ConnectionDialog } from "@/components/settings/connection-dialog";
 import { Button } from "@/components/ui/button";
-import { Welcome } from "@/components/welcome/welcome";
-import { useChatSession } from "@/hooks/use-chat-session";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Spinner } from "@/components/ui/spinner";
+import { useConversation } from "@/hooks/use-history";
 import { useActiveProfile } from "@/hooks/use-profiles";
+import { useConversationStore } from "@/stores/conversation-store";
 
-/** チャット画面。会話が空ならWelcome、あれば会話の列と下の入力欄を出す。 */
+/**
+ * チャット画面。いま開いている会話を表示する。
+ * 保存済みの会話は読み込んでから開き、会話が変わるたびに `ConversationView` を作り直す。
+ */
 export function ChatPage() {
   const { profile } = useActiveProfile();
-  const session = useChatSession(profile?.id);
+  const activeId = useConversationStore((state) => state.activeId);
+  const existing = useConversationStore((state) => state.existing);
+  const startNew = useConversationStore((state) => state.startNew);
+  const conversation = useConversation(activeId, existing);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const composer = (
-    <Composer
-      onSend={(text) => void session.send(text)}
-      onStop={() => void session.stop()}
-      busy={session.isBusy}
-      sendDisabled={profile === undefined}
-      autoFocus
-      actions={profile ? <ModelSelector profile={profile} /> : null}
-    />
-  );
+  let body: React.ReactNode;
+  if (existing && conversation.isError) {
+    body = (
+      <ConversationLoadError error={conversation.error} onStartNew={startNew} />
+    );
+  } else if (existing && conversation.messages === undefined) {
+    body = (
+      <div className="flex flex-1 items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  } else {
+    body = (
+      <ConversationView
+        key={activeId}
+        id={activeId}
+        initialMessages={conversation.messages}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+    );
+  }
 
   return (
-    <main className="flex h-svh min-h-0 flex-col">
-      <header className="flex justify-end px-3 py-2">
+    <div className="flex h-svh min-h-0 flex-col">
+      <header className="flex items-center justify-between px-3 py-2">
+        <SidebarTrigger />
         <Button
           type="button"
           variant="ghost"
@@ -40,24 +59,9 @@ export function ChatPage() {
         </Button>
       </header>
 
-      {session.messages.length === 0 ? (
-        <Welcome>{composer}</Welcome>
-      ) : (
-        <>
-          <div className="min-h-0 flex-1">
-            <MessageList
-              messages={session.messages}
-              busy={session.isBusy}
-              error={session.error}
-              onRetry={() => void session.retry()}
-              onOpenSettings={() => setSettingsOpen(true)}
-            />
-          </div>
-          <div className="mx-auto w-full max-w-3xl px-4 pb-4">{composer}</div>
-        </>
-      )}
+      {body}
 
       <ConnectionDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-    </main>
+    </div>
   );
 }
