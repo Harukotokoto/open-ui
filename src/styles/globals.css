@@ -1,0 +1,147 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * テーマ(Claude風)
+ * 色・角丸・フォントの数値はこのファイルの CSS 変数に集約する。
+ * コンポーネント側に色や角丸の値を直書きしない。
+ */
+
+@theme inline {
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI",
+    "Meiryo", sans-serif;
+  --font-heading: var(--font-sans);
+  --font-serif:
+    ui-serif, Georgia, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP",
+    serif;
+  --font-mono:
+    ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+  --background: #faf9f5;
+  --foreground: #141413;
+  --card: #f0eee6;
+  --card-foreground: #141413;
+  --popover: #ffffff;
+  --popover-foreground: #141413;
+  /* アクセント #D97757 を、白文字で WCAG AA(4.5:1)を満たすよう少し濃くした値 */
+  --primary: #b9573a;
+  --primary-foreground: #ffffff;
+  --secondary: #f0eee6;
+  --secondary-foreground: #141413;
+  --muted: #f0eee6;
+  --muted-foreground: #6b6a64;
+  --accent: #ebe8dd;
+  --accent-foreground: #141413;
+  --destructive: #b53333;
+  --border: #e8e6dc;
+  --input: #e8e6dc;
+  --ring: #d97757;
+  --chart-1: #d97757;
+  --chart-2: #c6613f;
+  --chart-3: #9c8f7a;
+  --chart-4: #6b6a64;
+  --chart-5: #3d3d3a;
+  --radius: 0.75rem;
+  --sidebar: #f5f4ed;
+  --sidebar-foreground: #141413;
+  --sidebar-primary: #b9573a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #ebe8dd;
+  --sidebar-accent-foreground: #141413;
+  --sidebar-border: #e8e6dc;
+  --sidebar-ring: #d97757;
+}
+
+.dark {
+  --background: #262624;
+  --foreground: #faf9f5;
+  --card: #30302e;
+  --card-foreground: #faf9f5;
+  --popover: #30302e;
+  --popover-foreground: #faf9f5;
+  --primary: #d97757;
+  --primary-foreground: #141413;
+  --secondary: #30302e;
+  --secondary-foreground: #faf9f5;
+  --muted: #30302e;
+  --muted-foreground: #b0aea5;
+  --accent: #3a3a37;
+  --accent-foreground: #faf9f5;
+  --destructive: #e5726b;
+  --border: #3d3d3a;
+  --input: #3d3d3a;
+  --ring: #d97757;
+  --chart-1: #d97757;
+  --chart-2: #e8956f;
+  --chart-3: #b0aea5;
+  --chart-4: #8a887f;
+  --chart-5: #5f5e59;
+  --sidebar: #1f1e1d;
+  --sidebar-foreground: #faf9f5;
+  --sidebar-primary: #d97757;
+  --sidebar-primary-foreground: #141413;
+  --sidebar-accent: #30302e;
+  --sidebar-accent-foreground: #faf9f5;
+  --sidebar-border: #3d3d3a;
+  --sidebar-ring: #d97757;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* 本文は 15〜16px、行間 1.6〜1.7(設計: Claude風タイポグラフィ) */
+    font-size: 15px;
+    line-height: 1.65;
+  }
+}
