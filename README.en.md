@@ -58,7 +58,7 @@ open-ui is a desktop app that gives you a comfortable chat interface for AI serv
 ### Settings and more
 
 - **Settings dialog**: Appearance (follow system / light / dark), connections, and generation (system prompt, temperature, max tokens). Search within settings is supported.
-- **Auto-update**: Checks for a new version at launch and, once you approve, updates and restarts. Update files are verified by signature. Development builds do not check.
+- **Auto-update**: Checks for a new version at launch and, once you approve, updates and restarts. You can also run "Check now" any time from Settings > About. Update files are verified by signature. Development builds do not check at launch.
 - **Responsive**: The minimum window size is 640×480, and the sidebar becomes an off-canvas panel at narrow widths.
 
 ## How it works
