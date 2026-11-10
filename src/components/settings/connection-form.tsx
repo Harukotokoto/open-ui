@@ -15,11 +15,13 @@ import type { ConnectionProfile, KeyStatus } from "@/types/bindings";
 interface ConnectionFormProps {
   profile: ConnectionProfile;
   keyStatus: KeyStatus | undefined;
-  onSaved: () => void;
-  onCancel: () => void;
+  /** 保存できたあとの処理 */
+  onSaved?: () => void;
+  /** 渡すと「キャンセル」を出す(ダイアログで使うとき) */
+  onCancel?: () => void;
 }
 
-/** 接続先の最小の設定フォーム。名前・URL・APIキー・モデル名を編集し、接続を確かめて保存する。 */
+/** 接続先の設定フォーム。名前・URL・APIキー・モデル名を編集し、接続を確かめて保存する。 */
 export function ConnectionForm({
   profile,
   keyStatus,
@@ -41,6 +43,11 @@ export function ConnectionForm({
 
   const test = useTestConnection();
   const save = useSaveConnection();
+
+  // 保存したあとに編集したら、「保存しました」は消す
+  const edited = () => {
+    if (save.isSuccess) save.reset();
+  };
 
   const draft: ConnectionProfile = {
     ...profile,
@@ -67,7 +74,10 @@ export function ConnectionForm({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    save.mutate({ profile: draft, keyChange }, { onSuccess: onSaved });
+    save.mutate(
+      { profile: draft, keyChange },
+      { onSuccess: () => onSaved?.() },
+    );
   };
 
   const models = test.data ?? [];
@@ -79,7 +89,10 @@ export function ConnectionForm({
         <Input
           id={ids.name}
           value={name}
-          onChange={(event) => setName(event.target.value)}
+          onChange={(event) => {
+            edited();
+            setName(event.target.value);
+          }}
           required
         />
       </Field>
@@ -92,7 +105,10 @@ export function ConnectionForm({
           inputMode="url"
           placeholder="http://localhost:1234/v1"
           value={baseUrl}
-          onChange={(event) => setBaseUrl(event.target.value)}
+          onChange={(event) => {
+            edited();
+            setBaseUrl(event.target.value);
+          }}
           required
         />
         <FieldDescription>
@@ -112,12 +128,16 @@ export function ConnectionForm({
           }
           value={apiKey}
           disabled={clearKey}
-          onChange={(event) => setApiKey(event.target.value)}
+          onChange={(event) => {
+            edited();
+            setApiKey(event.target.value);
+          }}
         />
         <KeyStatusNote
           status={keyStatus}
           clearKey={clearKey}
           onToggleClear={() => {
+            edited();
             setClearKey((value) => !value);
             setApiKey("");
           }}
@@ -133,7 +153,10 @@ export function ConnectionForm({
           spellCheck={false}
           placeholder="空ならサーバーの既定"
           value={model}
-          onChange={(event) => setModel(event.target.value)}
+          onChange={(event) => {
+            edited();
+            setModel(event.target.value);
+          }}
         />
         <datalist id={ids.models}>
           {models.map((id) => (
@@ -161,6 +184,11 @@ export function ConnectionForm({
           <AlertDescription>{errorMessage(test.error)}</AlertDescription>
         </Alert>
       )}
+      {save.isSuccess && (
+        <Alert>
+          <AlertTitle>保存しました</AlertTitle>
+        </Alert>
+      )}
       {save.isError && (
         <Alert variant="destructive">
           <AlertTitle>保存できませんでした</AlertTitle>
@@ -179,9 +207,11 @@ export function ConnectionForm({
           接続を確かめる
         </Button>
         <div className="flex gap-2">
-          <Button type="button" variant="ghost" onClick={onCancel}>
-            キャンセル
-          </Button>
+          {onCancel && (
+            <Button type="button" variant="ghost" onClick={onCancel}>
+              キャンセル
+            </Button>
+          )}
           <Button type="submit" disabled={save.isPending}>
             {save.isPending && <Spinner />}
             保存

@@ -1,7 +1,7 @@
 import type { ConversationSummary } from "@/types/bindings";
 
 /** 大文字小文字・全角半角の違いを無視して比べるための形にする。 */
-function normalize(text: string): string {
+export function normalizeForSearch(text: string): string {
   return text.normalize("NFKC").toLowerCase();
 }
 
@@ -13,10 +13,10 @@ export function filterByTitle<T extends Pick<ConversationSummary, "title">>(
   items: readonly T[],
   query: string,
 ): T[] {
-  const terms = normalize(query).split(/\s+/).filter(Boolean);
+  const terms = normalizeForSearch(query).split(/\s+/).filter(Boolean);
   if (terms.length === 0) return [...items];
   return items.filter((item) => {
-    const title = normalize(item.title);
+    const title = normalizeForSearch(item.title);
     return terms.every((term) => title.includes(term));
   });
 }

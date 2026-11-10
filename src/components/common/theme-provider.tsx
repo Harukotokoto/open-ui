@@ -1,6 +1,6 @@
 import { useLayoutEffect, useSyncExternalStore } from "react";
+import { useUiSettings } from "@/hooks/use-ui-settings";
 import { resolveTheme } from "@/lib/theme";
-import { useThemeStore } from "@/stores/theme-store";
 
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
@@ -14,9 +14,13 @@ function getSystemPrefersDark() {
   return window.matchMedia(DARK_QUERY).matches;
 }
 
-/** 選択したテーマ(と OS の設定)を `<html>` の `dark` クラスに反映する。 */
+/**
+ * 設定ファイルのテーマの選択(と OS の設定)を `<html>` の `dark` クラスに反映する。
+ * 設定を読み込むまで、読めなかったときも、OS の設定に従う。
+ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const preference = useThemeStore((state) => state.preference);
+  const { data } = useUiSettings();
+  const preference = data?.theme ?? "system";
   const systemPrefersDark = useSyncExternalStore(
     subscribeSystemTheme,
     getSystemPrefersDark,

@@ -5,7 +5,6 @@
 @custom-variant dark (&:is(.dark *));
 /* フォーカス時に枠(リング・枠線の色の変化)を出さない。`focus-visible:` の指定を無効にする */
 @custom-variant focus-visible (&:not(*));
-
 /*
  * テーマ(ニュートラルなグレー系)
  * 色・角丸・フォントの数値はこのファイルの CSS 変数に集約する。
@@ -55,9 +54,10 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
   --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  /* 角丸の上限は入力ボックス(`rounded-lg`)。それより大きい指定も同じ大きさにする */
+  /* ボタン・入力欄・メニュー項目などの操作部品(`rounded-md` / `rounded-lg`)は `rounded-sm` と同じ大きさにそろえる */
+  --radius-md: var(--radius-sm);
+  --radius-lg: var(--radius-sm);
+  /* ダイアログなどの面(`rounded-xl` 以上)は `--radius` の大きさにする */
   --radius-xl: var(--radius);
   --radius-2xl: var(--radius);
   --radius-3xl: var(--radius);

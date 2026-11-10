@@ -58,7 +58,7 @@ function renderPage() {
 async function send(text: string) {
   const user = userEvent.setup();
   // 接続先の読み込みが終わるまで、送信はできない
-  await screen.findByRole("button", { name: /LM Studio/ });
+  await screen.findByRole("button", { name: "モデルを選ぶ" });
   await user.type(screen.getByRole("textbox", { name: "メッセージ" }), text);
   await user.click(screen.getByRole("button", { name: "送信" }));
 }
@@ -81,7 +81,10 @@ describe("ChatPage", () => {
     expect(
       screen.getByRole("textbox", { name: "メッセージ" }),
     ).toBeInTheDocument();
-    expect(await screen.findByText("LM Studio")).toBeInTheDocument();
+    // 接続先を読み込むと、入力欄にモデルの選択が出る
+    expect(
+      await screen.findByRole("button", { name: "モデルを選ぶ" }),
+    ).toBeInTheDocument();
   });
 
   it("送信すると、発言と返答(と思考)を会話に並べる", async () => {

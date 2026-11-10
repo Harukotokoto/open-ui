@@ -25,16 +25,33 @@ pub async fn chat_start(
     };
 
     let profiles = state.profiles.clone();
+    let settings = state.settings.clone();
     let profile_id = request.profile_id.clone();
-    let connection = match request.validate() {
-        Ok(()) => blocking(move || profiles.connection(&profile_id)).await,
+    // 接続先と生成の設定は、リクエストのたびに読む(設定の変更がすぐ反映される)
+    let prepared = match request.validate() {
+        Ok(()) => {
+            blocking(move || {
+                Ok((
+                    profiles.connection(&profile_id)?,
+                    settings.load_generation()?,
+                ))
+            })
+            .await
+        }
         Err(error) => Err(error),
     };
-    match connection {
-        Ok(connection) => {
+    match prepared {
+        Ok((connection, generation)) => {
+            let messages = generation.with_system_prompt(&request.messages);
             state
                 .api
-                .chat(&request.request_id, &connection, &request.messages, emit)
+                .chat(
+                    &request.request_id,
+                    &connection,
+                    &messages,
+                    generation.params(),
+                    emit,
+                )
                 .await;
         }
         Err(error) => emit(ChatEvent::Error {

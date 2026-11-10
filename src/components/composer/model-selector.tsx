@@ -56,7 +56,7 @@ export function ModelSelector({ profile, className }: ModelSelectorProps) {
           <InputGroupButton
             size="sm"
             aria-label="モデルを選ぶ"
-            className={cn("max-w-48", className)}
+            className={cn("max-w-48 text-foreground", className)}
           />
         }
       >
