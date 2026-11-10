@@ -58,7 +58,8 @@ export function Composer({
 
   return (
     <form ref={formRef} onSubmit={submit} className="w-full">
-      <InputGroup>
+      {/* フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる) */}
+      <InputGroup className="has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0">
         <InputGroupTextarea
           value={text}
           onChange={(event) => setText(event.target.value)}
