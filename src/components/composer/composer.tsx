@@ -1,4 +1,4 @@
-import { ArrowUpIcon, SquareIcon } from "lucide-react";
+﻿import { ArrowUpIcon, PlusIcon, SquareIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import {
   InputGroup,
@@ -18,6 +18,8 @@ interface ComposerProps {
   sendDisabled?: boolean;
   placeholder?: string;
   autoFocus?: boolean;
+  /** 送信ボタンの左に並べる操作(モデルの選択など)。 */
+  actions?: React.ReactNode;
 }
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行。返答中は送信ボタンが停止ボタンになる。 */
@@ -28,6 +30,7 @@ export function Composer({
   sendDisabled = false,
   placeholder = "メッセージを入力",
   autoFocus = false,
+  actions,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -55,7 +58,8 @@ export function Composer({
 
   return (
     <form ref={formRef} onSubmit={submit} className="w-full">
-      <InputGroup className="rounded-2xl bg-card shadow-sm">
+      {/* フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる) */}
+      <InputGroup className="has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0">
         <InputGroupTextarea
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -64,31 +68,45 @@ export function Composer({
           aria-label="メッセージ"
           rows={1}
           autoFocus={autoFocus}
-          className="max-h-60 min-h-14 [field-sizing:content]"
+          className="max-h-60 p-3 text-[14px] md:text-[14px]"
         />
-        <InputGroupAddon align="block-end" className="pt-1">
-          {busy ? (
-            <InputGroupButton
-              variant="default"
-              size="icon-sm"
-              className="ml-auto rounded-full"
-              onClick={onStop}
-            >
-              <SquareIcon className="fill-current" />
-              <span className="sr-only">生成を止める</span>
-            </InputGroupButton>
-          ) : (
-            <InputGroupButton
-              type="submit"
-              variant="default"
-              size="icon-sm"
-              className="ml-auto rounded-full"
-              disabled={!canSend}
-            >
-              <ArrowUpIcon />
-              <span className="sr-only">送信</span>
-            </InputGroupButton>
-          )}
+        <InputGroupAddon align="block-end">
+          {/* 添付は未実装。機能を入れるまで押せない状態にしておく */}
+          <InputGroupButton
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            className="rounded-full"
+            disabled
+            aria-label="ファイルを添付(準備中)"
+          >
+            <PlusIcon />
+          </InputGroupButton>
+          <div className="ml-auto flex items-center gap-1">
+            {actions}
+            {busy ? (
+              <InputGroupButton
+                variant="default"
+                size="icon-sm"
+                className="rounded-full"
+                onClick={onStop}
+              >
+                <SquareIcon className="fill-current" />
+                <span className="sr-only">生成を止める</span>
+              </InputGroupButton>
+            ) : (
+              <InputGroupButton
+                type="submit"
+                variant="default"
+                size="icon-sm"
+                className="rounded-full"
+                disabled={!canSend}
+              >
+                <ArrowUpIcon />
+                <span className="sr-only">送信</span>
+              </InputGroupButton>
+            )}
+          </div>
         </InputGroupAddon>
       </InputGroup>
     </form>
