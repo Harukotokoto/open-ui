@@ -17,7 +17,11 @@ pub use active::{ActiveGuard, ActiveRequests};
 pub use connection::Connection;
 pub use types::{ChatEvent, Emit, ProviderKind, Role, WireMessage};
 
-use crate::error::AppError;
+use std::time::Duration;
+
+use tokio_util::sync::CancellationToken;
+
+use crate::error::{AppError, AppErrorKind};
 
 /// HTTPクライアントと、実行中のリクエストをまとめたもの。アプリで1つ作って共有する。
 pub struct ApiClient {
@@ -54,6 +58,38 @@ impl ApiClient {
                 message: error.message,
             });
         }
+    }
+
+    /// 返答を最後まで受け取って、本文だけを返す(タイトル作りなど、画面に流さない用途)。
+    /// 思考は含めない。`timeout` を過ぎたら中断して失敗にする。
+    pub async fn complete(
+        &self,
+        connection: &Connection,
+        messages: &[WireMessage],
+        timeout: Duration,
+    ) -> Result<String, AppError> {
+        let cancel = CancellationToken::new();
+        let mut text = String::new();
+        let mut collect = |event: ChatEvent| {
+            if let ChatEvent::Delta { text: delta } = event {
+                text.push_str(&delta);
+            }
+        };
+        let request = match connection.kind {
+            ProviderKind::OpenAiCompatible => {
+                openai::chat(&self.http, connection, messages, &cancel, &mut collect)
+            }
+        };
+        match tokio::time::timeout(timeout, request).await {
+            Ok(result) => result?,
+            Err(_) => {
+                return Err(AppError::new(
+                    AppErrorKind::Timeout,
+                    "サーバーからの応答がタイムアウトしました。",
+                ));
+            }
+        }
+        Ok(text)
     }
 
     /// 実行中のリクエストを中断する。
@@ -104,6 +140,59 @@ mod tests {
         assert!(
             matches!(&events[0], ChatEvent::Error { message } if message.contains("接続できません"))
         );
+    }
+
+    #[tokio::test]
+    async fn complete_joins_the_text_and_leaves_out_reasoning() {
+        let (url, server) = serve_once(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n\
+             data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"考え\"}}]}\n\n\
+             data: {\"choices\":[{\"delta\":{\"content\":\"京都\"}}]}\n\n\
+             data: {\"choices\":[{\"delta\":{\"content\":\"旅行\"}}]}\n\n\
+             data: [DONE]\n\n"
+                .to_owned(),
+        );
+        let api = ApiClient::new().unwrap();
+
+        let text = api
+            .complete(&connection(&url), &user(), Duration::from_secs(10))
+            .await
+            .unwrap();
+
+        assert_eq!(text, "京都旅行");
+        server.join().unwrap();
+    }
+
+    #[tokio::test]
+    async fn complete_fails_when_the_server_does() {
+        let api = ApiClient::new().unwrap();
+
+        let error = api
+            .complete(
+                &connection("http://127.0.0.1:1/v1"),
+                &user(),
+                Duration::from_secs(10),
+            )
+            .await
+            .unwrap_err();
+
+        assert_eq!(error.kind, AppErrorKind::ConnectionFailed);
+    }
+
+    #[tokio::test]
+    async fn complete_gives_up_after_the_timeout() {
+        let (url, server) = super::test_support::serve_hanging(
+            "HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\n\r\n".to_owned(),
+        );
+        let api = ApiClient::new().unwrap();
+
+        let error = api
+            .complete(&connection(&url), &user(), Duration::from_millis(300))
+            .await
+            .unwrap_err();
+
+        assert_eq!(error.kind, AppErrorKind::Timeout);
+        drop(server);
     }
 
     #[tokio::test]

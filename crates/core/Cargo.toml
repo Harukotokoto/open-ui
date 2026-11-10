@@ -15,7 +15,7 @@ specta-typescript.workspace = true
 reqwest.workspace = true
 futures-util.workspace = true
 keyring.workspace = true
-tokio = { workspace = true, features = ["macros", "rt"] }
+tokio = { workspace = true, features = ["macros", "rt", "time"] }
 tokio-util.workspace = true
 
 [dev-dependencies]
