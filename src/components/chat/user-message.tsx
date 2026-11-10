@@ -9,7 +9,7 @@ export function UserMessage({ message }: { message: UIMessage }) {
     <Message align="end">
       <MessageContent>
         <Bubble align="end" variant="muted">
-          <BubbleContent className="rounded-2xl text-base whitespace-pre-wrap">
+          <BubbleContent className="rounded-lg text-base whitespace-pre-wrap">
             {getMessageText(message)}
           </BubbleContent>
         </Bubble>

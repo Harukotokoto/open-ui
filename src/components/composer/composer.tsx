@@ -1,4 +1,4 @@
-﻿import { ArrowUpIcon, PlusIcon, SquareIcon } from "lucide-react";
+import { ArrowUpIcon, PlusIcon, SquareIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import {
   InputGroup,
@@ -76,7 +76,6 @@ export function Composer({
             type="button"
             variant="outline"
             size="icon-sm"
-            className="rounded-full"
             disabled
             aria-label="ファイルを添付(準備中)"
           >
@@ -88,7 +87,6 @@ export function Composer({
               <InputGroupButton
                 variant="default"
                 size="icon-sm"
-                className="rounded-full"
                 onClick={onStop}
               >
                 <SquareIcon className="fill-current" />
@@ -99,7 +97,6 @@ export function Composer({
                 type="submit"
                 variant="default"
                 size="icon-sm"
-                className="rounded-full"
                 disabled={!canSend}
               >
                 <ArrowUpIcon />
