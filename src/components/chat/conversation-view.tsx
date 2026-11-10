@@ -7,6 +7,9 @@ import { useAutosaveConversation } from "@/hooks/use-autosave-conversation";
 import { useChatSession } from "@/hooks/use-chat-session";
 import { useActiveProfile } from "@/hooks/use-profiles";
 
+/** 会話の途中の入力欄の下に出す注意書き。 */
+const AI_NOTICE = "AIは間違えることがあります。回答は必ずご確認ください。";
+
 interface ConversationViewProps {
   id: string;
   initialMessages?: UIMessage[];
@@ -26,19 +29,23 @@ export function ConversationView({
   const session = useChatSession(profile?.id, { id, initialMessages });
   useAutosaveConversation(id, session.messages, session.status, profile?.id);
 
-  const composer = (
-    <Composer
-      onSend={(text) => void session.send(text)}
-      onStop={() => void session.stop()}
-      busy={session.isBusy}
-      sendDisabled={profile === undefined}
-      autoFocus
-      actions={profile ? <ModelSelector profile={profile} /> : null}
-    />
-  );
+  const composerProps = {
+    onSend: (text: string) => void session.send(text),
+    onStop: () => void session.stop(),
+    busy: session.isBusy,
+    sendDisabled: profile === undefined,
+    autoFocus: true,
+  };
 
   if (session.messages.length === 0) {
-    return <Welcome>{composer}</Welcome>;
+    return (
+      <Welcome>
+        <Composer
+          {...composerProps}
+          actions={profile ? <ModelSelector profile={profile} /> : null}
+        />
+      </Welcome>
+    );
   }
 
   return (
@@ -52,7 +59,19 @@ export function ConversationView({
           onOpenSettings={onOpenSettings}
         />
       </div>
-      <div className="mx-auto w-full max-w-3xl px-4 pb-4">{composer}</div>
+      <div className="mx-auto w-full max-w-3xl px-4 pb-3">
+        {/* 会話の途中は、1行のスリムな入力欄。モデルの選択は下の段に置く */}
+        <Composer
+          {...composerProps}
+          variant="compact"
+          hint={AI_NOTICE}
+          actions={
+            profile ? (
+              <ModelSelector profile={profile} className="h-6 px-1.5 text-xs" />
+            ) : null
+          }
+        />
+      </div>
     </>
   );
 }

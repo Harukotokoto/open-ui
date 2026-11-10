@@ -110,6 +110,16 @@ describe("ChatPage", () => {
     expect(
       screen.queryByRole("heading", { name: "今日は何をしましょうか?" }),
     ).not.toBeInTheDocument();
+    // 会話の途中は、1行の入力欄と注意書きに変わる
+    expect(
+      screen.getByText(
+        "AIは間違えることがあります。回答は必ずご確認ください。",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "メッセージ" })).toHaveAttribute(
+      "rows",
+      "1",
+    );
   });
 
   it("失敗したら、メッセージと、やり直し・接続設定の操作を出す", async () => {

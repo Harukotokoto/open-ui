@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { InputGroupButton } from "@/components/ui/input-group";
 import { useAvailableModels, useSaveConnection } from "@/hooks/use-profiles";
+import { cn } from "@/lib/utils";
 import type { ConnectionProfile } from "@/types/bindings";
 
 /** モデルを選んでいないとき(サーバーの既定を使うとき)の表示。 */
@@ -20,13 +21,15 @@ const DEFAULT_VALUE = "";
 
 interface ModelSelectorProps {
   profile: ConnectionProfile;
+  /** 開くボタンに足すclass(小さくするときなど)。 */
+  className?: string;
 }
 
 /**
  * 入力欄に置く、モデルの選択メニュー。
  * 候補は接続先から取得し、選ぶと使用中のプロファイルの選択モデルとして保存する。
  */
-export function ModelSelector({ profile }: ModelSelectorProps) {
+export function ModelSelector({ profile, className }: ModelSelectorProps) {
   const [open, setOpen] = useState(false);
   const models = useAvailableModels(profile, open);
   const save = useSaveConnection();
@@ -53,7 +56,7 @@ export function ModelSelector({ profile }: ModelSelectorProps) {
           <InputGroupButton
             size="sm"
             aria-label="モデルを選ぶ"
-            className="max-w-48"
+            className={cn("max-w-48", className)}
           />
         }
       >

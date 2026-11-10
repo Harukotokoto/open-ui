@@ -1,9 +1,9 @@
-import { ArrowUpIcon, PlusIcon, SquareIcon } from "lucide-react";
 import { useRef, useState } from "react";
+import { AttachButton } from "@/components/composer/attach-button";
+import { SendButton } from "@/components/composer/send-button";
 import {
   InputGroup,
   InputGroupAddon,
-  InputGroupButton,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
 
@@ -18,9 +18,19 @@ interface ComposerProps {
   sendDisabled?: boolean;
   placeholder?: string;
   autoFocus?: boolean;
-  /** 送信ボタンの左に並べる操作(モデルの選択など)。 */
+  /**
+   * 並べ方。`default` は大きな入力欄(最初の画面)、`compact` は1行のスリムな入力欄(会話の途中)。
+   */
+  variant?: "default" | "compact";
+  /** 送信ボタンの近くに並べる操作(モデルの選択など)。 */
   actions?: React.ReactNode;
+  /** `compact` のとき、入力欄の下の左に出す注意書き。 */
+  hint?: React.ReactNode;
 }
+
+/** フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる)。 */
+const GROUP_CLASS =
+  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0";
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行。返答中は送信ボタンが停止ボタンになる。 */
 export function Composer({
@@ -30,7 +40,9 @@ export function Composer({
   sendDisabled = false,
   placeholder = "メッセージを入力",
   autoFocus = false,
+  variant = "default",
   actions,
+  hint,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -56,53 +68,51 @@ export function Composer({
     formRef.current?.requestSubmit();
   };
 
+  const textarea = (className: string) => (
+    <InputGroupTextarea
+      value={text}
+      onChange={(event) => setText(event.target.value)}
+      onKeyDown={handleKeyDown}
+      placeholder={placeholder}
+      aria-label="メッセージ"
+      rows={1}
+      autoFocus={autoFocus}
+      className={className}
+    />
+  );
+  const send = <SendButton busy={busy} canSend={canSend} onStop={onStop} />;
+
+  if (variant === "compact") {
+    return (
+      <form ref={formRef} onSubmit={submit} className="w-full">
+        <InputGroup className={GROUP_CLASS}>
+          <InputGroupAddon align="inline-start" className="self-end">
+            <AttachButton variant="ghost" />
+          </InputGroupAddon>
+          {textarea("max-h-40 min-h-0 px-1 py-2.5 text-[14px] md:text-[14px]")}
+          <InputGroupAddon align="inline-end" className="self-end">
+            {send}
+          </InputGroupAddon>
+        </InputGroup>
+        <div className="flex min-h-7 items-center justify-between gap-2 px-2 pt-1">
+          <p className="min-w-0 truncate text-xs text-muted-foreground">
+            {hint}
+          </p>
+          {actions}
+        </div>
+      </form>
+    );
+  }
+
   return (
     <form ref={formRef} onSubmit={submit} className="w-full">
-      {/* フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる) */}
-      <InputGroup className="has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0">
-        <InputGroupTextarea
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          aria-label="メッセージ"
-          rows={1}
-          autoFocus={autoFocus}
-          className="max-h-60 p-3 text-[14px] md:text-[14px]"
-        />
+      <InputGroup className={GROUP_CLASS}>
+        {textarea("max-h-60 p-3 text-[14px] md:text-[14px]")}
         <InputGroupAddon align="block-end">
-          {/* 添付は未実装。機能を入れるまで押せない状態にしておく */}
-          <InputGroupButton
-            type="button"
-            variant="outline"
-            size="icon-sm"
-            disabled
-            aria-label="ファイルを添付(準備中)"
-          >
-            <PlusIcon />
-          </InputGroupButton>
+          <AttachButton />
           <div className="ml-auto flex items-center gap-1">
             {actions}
-            {busy ? (
-              <InputGroupButton
-                variant="default"
-                size="icon-sm"
-                onClick={onStop}
-              >
-                <SquareIcon className="fill-current" />
-                <span className="sr-only">生成を止める</span>
-              </InputGroupButton>
-            ) : (
-              <InputGroupButton
-                type="submit"
-                variant="default"
-                size="icon-sm"
-                disabled={!canSend}
-              >
-                <ArrowUpIcon />
-                <span className="sr-only">送信</span>
-              </InputGroupButton>
-            )}
+            {send}
           </div>
         </InputGroupAddon>
       </InputGroup>
