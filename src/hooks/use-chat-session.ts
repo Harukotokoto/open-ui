@@ -1,9 +1,11 @@
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
+import { toFilePart } from "@/lib/attachments";
 import { buildFormatGuide } from "@/lib/markdown/custom-tags";
 import { cancelChat, startChat } from "@/services/chat/ipc";
 import { TauriChatTransport } from "@/services/chat/transport";
+import type { AttachmentInfo } from "@/types/bindings";
 
 const backend = { start: startChat, cancel: cancelChat };
 /** 画面が描ける書式(Markdownと独自タグ)をAIに伝える説明。常に付ける。 */
@@ -53,7 +55,13 @@ export function useChatSession(
     status: chat.status,
     error: chat.error,
     isBusy,
-    send: (text: string) => chat.sendMessage({ text }),
+    send: (text: string, attachments: AttachmentInfo[] = []) =>
+      chat.sendMessage({
+        text,
+        ...(attachments.length > 0
+          ? { files: attachments.map(toFilePart) }
+          : {}),
+      }),
     stop: chat.stop,
     retry: () => chat.regenerate(),
   };

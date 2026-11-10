@@ -1,18 +1,26 @@
 import { useRef, useState } from "react";
+import { AttachmentErrors } from "@/components/attachments/attachment-errors";
+import { AttachmentRow } from "@/components/attachments/attachment-row";
 import { AttachButton } from "@/components/composer/attach-button";
 import { SendButton } from "@/components/composer/send-button";
+import { VoiceButton } from "@/components/composer/voice-button";
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
+import { useAttachments } from "@/hooks/use-attachments";
+import { useFileDrop } from "@/hooks/use-file-drop";
 import { useUiSettings } from "@/hooks/use-ui-settings";
 import { isJustComposed, shouldSendOnEnter } from "@/lib/composer-keys";
 import { cn } from "@/lib/utils";
+import type { AttachmentInfo } from "@/types/bindings";
 
 interface ComposerProps {
-  /** 送信する。空白だけのときは呼ばれない。 */
-  onSend: (text: string) => void;
+  /** 添付の置き場になる会話のID。 */
+  conversationId: string;
+  /** 送信する。本文が空白だけで添付も無いときは呼ばれない。 */
+  onSend: (text: string, attachments: AttachmentInfo[]) => void;
   /** 返答の生成を止める。 */
   onStop: () => void;
   /** 返答の生成中か。 */
@@ -40,6 +48,7 @@ const GROUP_CLASS =
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行(設定で逆にできる)。返答中は送信ボタンが停止ボタンになる。 */
 export function Composer({
+  conversationId,
   onSend,
   onStop,
   busy,
@@ -55,13 +64,29 @@ export function Composer({
   /** 直近の変換の終了時刻(`compositionend` の `timeStamp`) */
   const compositionEndedAt = useRef<number | null>(null);
   const shiftEnter = useUiSettings().data?.shiftEnter ?? "newline";
-  const canSend = text.trim() !== "" && !busy && !sendDisabled;
+  const attachments = useAttachments(conversationId);
+  // 返答の生成中は、次の発言を送れないので、添付も受け付けない
+  const { dragging, handlers: dropHandlers } = useFileDrop(
+    (files) => void attachments.addFiles(files),
+    busy,
+  );
+  const hasContent = text.trim() !== "" || attachments.items.length > 0;
+  // 添付の保存が終わるまで送らない(送る一覧に入らないため)
+  const canSend = hasContent && !busy && !sendDisabled && !attachments.busy;
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSend) return;
-    onSend(text.trim());
+    onSend(text.trim(), attachments.takeAll());
+    attachments.clearErrors();
     setText("");
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const files = Array.from(event.clipboardData.files);
+    if (files.length === 0) return;
+    event.preventDefault();
+    void attachments.addFiles(files);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -89,6 +114,7 @@ export function Composer({
       value={text}
       onChange={(event) => setText(event.target.value)}
       onKeyDown={handleKeyDown}
+      onPaste={handlePaste}
       onCompositionEnd={(event) => {
         compositionEndedAt.current = event.timeStamp;
       }}
@@ -100,16 +126,48 @@ export function Composer({
     />
   );
   const send = <SendButton busy={busy} canSend={canSend} onStop={onStop} />;
+  const attach = (variant: "outline" | "ghost") => (
+    <AttachButton
+      variant={variant}
+      onClick={() => void attachments.pick()}
+      disabled={busy || attachments.full}
+    />
+  );
+  const groupClass = cn(
+    GROUP_CLASS,
+    dragging && "border-ring ring-2 ring-ring/30",
+  );
+  const preview = (
+    <>
+      <AttachmentRow
+        conversationId={conversationId}
+        items={attachments.items}
+        onRemove={attachments.remove}
+        className="px-1 pb-1.5"
+      />
+      <AttachmentErrors
+        errors={attachments.errors}
+        onDismiss={attachments.clearErrors}
+      />
+    </>
+  );
 
   if (variant === "compact") {
     return (
-      <form ref={formRef} onSubmit={submit} className="w-full">
-        <InputGroup className={GROUP_CLASS}>
+      <form
+        ref={formRef}
+        onSubmit={submit}
+        className="w-full"
+        {...dropHandlers}
+      >
+        {preview}
+        <InputGroup className={groupClass}>
           <InputGroupAddon align="inline-start" className="self-end">
-            <AttachButton variant="ghost" />
+            {attach("ghost")}
           </InputGroupAddon>
           {textarea("max-h-40 min-h-0 px-1 py-2.5 text-[14px] md:text-[14px]")}
           <InputGroupAddon align="inline-end" className="self-end">
+            <VoiceButton />
             {send}
           </InputGroupAddon>
         </InputGroup>
@@ -124,13 +182,15 @@ export function Composer({
   }
 
   return (
-    <form ref={formRef} onSubmit={submit} className="w-full">
-      <InputGroup className={GROUP_CLASS}>
+    <form ref={formRef} onSubmit={submit} className="w-full" {...dropHandlers}>
+      {preview}
+      <InputGroup className={groupClass}>
         {textarea("max-h-60 p-3 text-[14px] md:text-[14px]")}
         <InputGroupAddon align="block-end">
-          <AttachButton />
+          {attach("outline")}
           <div className="ml-auto flex items-center gap-1">
             {actions}
+            <VoiceButton />
             {send}
           </div>
         </InputGroupAddon>

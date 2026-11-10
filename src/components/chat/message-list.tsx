@@ -13,6 +13,8 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 
 interface MessageListProps {
+  /** 添付の置き場になる会話のID。 */
+  conversationId: string;
   messages: UIMessage[];
   /** 返答の生成中か。 */
   busy: boolean;
@@ -23,6 +25,7 @@ interface MessageListProps {
 
 /** 会話の列。ユーザーの発言を基準に、返答へ自動で追従する。 */
 export function MessageList({
+  conversationId,
   messages,
   busy,
   error,
@@ -51,7 +54,10 @@ export function MessageList({
                   messageId={message.id}
                   scrollAnchor
                 >
-                  <UserMessage message={message} />
+                  <UserMessage
+                    conversationId={conversationId}
+                    message={message}
+                  />
                 </MessageScrollerItem>
               ) : message.parts.length === 0 ? null : (
                 <MessageScrollerItem key={message.id} messageId={message.id}>

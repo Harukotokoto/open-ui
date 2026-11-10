@@ -27,6 +27,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
   ) {}
 
   async sendMessages({
+    chatId,
     messages,
     abortSignal,
   }: SendOptions): Promise<ReadableStream<UIMessageChunk>> {
@@ -73,6 +74,8 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
         {
           requestId,
           profileId: this.getProfileId(),
+          // 会話のID。添付の置き場を指す
+          conversationId: chatId,
           messages: toWireMessages(messages),
           formatGuide: this.getFormatGuide(),
         },
