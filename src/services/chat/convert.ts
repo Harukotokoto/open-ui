@@ -1,15 +1,28 @@
 import type { UIMessage, UIMessageChunk } from "ai";
+import { attachmentIdOf, getAttachmentParts } from "@/lib/attachments";
 import { getMessageText } from "@/lib/messages";
-import type { ChatEvent, WireMessage } from "@/types/bindings";
+import type { ChatEvent, ChatMessage } from "@/types/bindings";
 
 /**
- * 会話(`UIMessage`)を、サーバーへ送る形にする。
- * 思考(reasoning)など本文以外のパーツは含めない。本文が空のメッセージは送らない。
+ * 会話(`UIMessage`)を、Rustへ渡す形にする。
+ * 思考(reasoning)など本文以外のパーツは含めない。添付は中身ではなくIDだけを渡す(中身はRustが読む)。
+ * 本文も添付も無いメッセージは送らない。
  */
-export function toWireMessages(messages: UIMessage[]): WireMessage[] {
+export function toWireMessages(messages: UIMessage[]): ChatMessage[] {
   return messages.flatMap((message) => {
     const content = getMessageText(message);
-    return content === "" ? [] : [{ role: message.role, content }];
+    const attachments = getAttachmentParts(message).flatMap((part) => {
+      const id = attachmentIdOf(part);
+      return id === undefined ? [] : [id];
+    });
+    if (content === "" && attachments.length === 0) return [];
+    return [
+      {
+        role: message.role,
+        content,
+        ...(attachments.length > 0 ? { attachments } : {}),
+      },
+    ];
   });
 }
 

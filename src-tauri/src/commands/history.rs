@@ -1,6 +1,6 @@
 //! チャット履歴のコマンド。ファイルの読み書きは `open_ui_core::history` が行う。
 
-use std::time::Duration;
+use std::time::{Duration, SystemTime};
 
 use open_ui_core::error::AppError;
 use open_ui_core::history::{
@@ -41,7 +41,18 @@ pub async fn history_save(
     conversation: SaveConversation,
 ) -> Result<Option<ConversationSummary>, AppError> {
     let history = state.history.clone();
-    blocking(move || history.save(&conversation.id, conversation.messages, unix_now())).await
+    let attachments = state.attachments.clone();
+    blocking(move || {
+        let summary = history.save(&conversation.id, conversation.messages.clone(), unix_now())?;
+        // 送信されなかった添付を掃除する。失敗しても、保存できた会話は成功として返す
+        let _ = attachments.prune_unreferenced(
+            &conversation.id,
+            &conversation.messages,
+            SystemTime::now(),
+        );
+        Ok(summary)
+    })
+    .await
 }
 
 /// 会話の名前を変える。
@@ -94,5 +105,10 @@ pub async fn history_generate_title(
 #[specta::specta]
 pub async fn history_delete(state: State<'_, AppState>, id: String) -> Result<(), AppError> {
     let history = state.history.clone();
-    blocking(move || history.delete(&id)).await
+    let attachments = state.attachments.clone();
+    blocking(move || {
+        history.delete(&id)?;
+        attachments.delete_conversation(&id)
+    })
+    .await
 }

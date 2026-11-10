@@ -51,6 +51,7 @@ describe("TauriChatTransport", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({
       profileId: "default",
+      conversationId: "c1",
       messages: [{ role: "user", content: "やあ" }],
     });
     expect(chunks.map((c) => c.type)).toContain("text-delta");

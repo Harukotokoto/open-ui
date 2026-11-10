@@ -42,6 +42,46 @@ describe("toWireMessages", () => {
       { role: "user", content: "やあ" },
     ]);
   });
+
+  it("添付はIDだけを渡し、本文が空でも添付があれば送る", () => {
+    const messages = [
+      message("user", [
+        {
+          type: "file",
+          mediaType: "image/png",
+          filename: "a.png",
+          url: "attachment://id-1",
+        },
+        {
+          type: "file",
+          mediaType: "text/plain",
+          filename: "b.txt",
+          url: "attachment://id-2",
+        },
+      ]),
+    ];
+
+    expect(toWireMessages(messages)).toEqual([
+      { role: "user", content: "", attachments: ["id-1", "id-2"] },
+    ]);
+  });
+
+  it("添付でないURLのファイルは、渡さない", () => {
+    const messages = [
+      message("user", [
+        { type: "text", text: "これ" },
+        {
+          type: "file",
+          mediaType: "image/png",
+          url: "https://example.com/a.png",
+        },
+      ]),
+    ];
+
+    expect(toWireMessages(messages)).toEqual([
+      { role: "user", content: "これ" },
+    ]);
+  });
 });
 
 describe("createEventConverter", () => {

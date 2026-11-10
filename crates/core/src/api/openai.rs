@@ -259,10 +259,7 @@ mod tests {
     }
 
     fn user(text: &str) -> Vec<WireMessage> {
-        vec![WireMessage {
-            role: Role::User,
-            content: text.to_owned(),
-        }]
+        vec![WireMessage::text(Role::User, text.to_owned())]
     }
 
     /// `chat` を実行して、流れたイベントと結果を返す。
@@ -308,6 +305,31 @@ mod tests {
         // 指定が無ければ、サーバーの既定に任せる
         assert!(body.get("temperature").is_none());
         assert!(body.get("max_tokens").is_none());
+    }
+
+    #[test]
+    fn chat_body_sends_images_as_content_parts() {
+        let messages = [WireMessage {
+            role: Role::User,
+            content: "これは?".into(),
+            images: vec![crate::api::WireImage {
+                media_type: "image/jpeg".into(),
+                data_base64: "QUJD".into(),
+            }],
+        }];
+
+        let body = chat_body("m", &messages, GenerationParams::default());
+
+        assert_eq!(
+            body["messages"],
+            json!([{
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": "これは?"},
+                    {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,QUJD"}},
+                ],
+            }])
+        );
     }
 
     #[test]

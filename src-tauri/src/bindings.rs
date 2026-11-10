@@ -19,6 +19,10 @@ pub fn builder() -> Builder<tauri::Wry> {
         .disable_serde_phases()
         .commands(collect_commands![
             commands::app::app_info,
+            commands::attachments::attachment_add,
+            commands::attachments::attachment_pick,
+            commands::attachments::attachment_remove,
+            commands::attachments::attachment_image,
             commands::chat::chat_start,
             commands::chat::chat_cancel,
             commands::generation_settings::generation_settings_get,

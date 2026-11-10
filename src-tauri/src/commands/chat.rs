@@ -26,14 +26,19 @@ pub async fn chat_start(
 
     let profiles = state.profiles.clone();
     let settings = state.settings.clone();
+    let attachments = state.attachments.clone();
     let profile_id = request.profile_id.clone();
-    // 接続先と生成の設定は、リクエストのたびに読む(設定の変更がすぐ反映される)
+    let conversation_id = request.conversation_id.clone();
+    let chat_messages = request.messages.clone();
+    // 接続先と生成の設定は、リクエストのたびに読む(設定の変更がすぐ反映される)。
+    // 添付の読み込み(画像のbase64化など)も、ここでまとめて別スレッドに任せる
     let prepared = match request.validate() {
         Ok(()) => {
             blocking(move || {
                 Ok((
                     profiles.connection(&profile_id)?,
                     settings.load_generation()?,
+                    attachments.resolve(conversation_id.as_deref(), &chat_messages)?,
                 ))
             })
             .await
@@ -41,9 +46,9 @@ pub async fn chat_start(
         Err(error) => Err(error),
     };
     match prepared {
-        Ok((connection, generation)) => {
+        Ok((connection, generation, wire_messages)) => {
             let messages =
-                generation.with_system_prompt(&request.messages, request.format_guide.as_deref());
+                generation.with_system_prompt(&wire_messages, request.format_guide.as_deref());
             state
                 .api
                 .chat(

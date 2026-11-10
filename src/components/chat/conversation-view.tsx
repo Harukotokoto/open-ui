@@ -6,6 +6,7 @@ import { Welcome } from "@/components/welcome/welcome";
 import { useAutosaveConversation } from "@/hooks/use-autosave-conversation";
 import { useChatSession } from "@/hooks/use-chat-session";
 import { useActiveProfile } from "@/hooks/use-profiles";
+import type { AttachmentInfo } from "@/types/bindings";
 
 /** 会話の途中の入力欄の下に出す注意書き。 */
 const AI_NOTICE = "AIは間違えることがあります。回答は必ずご確認ください。";
@@ -30,7 +31,9 @@ export function ConversationView({
   useAutosaveConversation(id, session.messages, session.status, profile?.id);
 
   const composerProps = {
-    onSend: (text: string) => void session.send(text),
+    conversationId: id,
+    onSend: (text: string, attachments: AttachmentInfo[]) =>
+      void session.send(text, attachments),
     onStop: () => void session.stop(),
     busy: session.isBusy,
     sendDisabled: profile === undefined,
@@ -49,6 +52,7 @@ export function ConversationView({
     <>
       <div className="min-h-0 flex-1">
         <MessageList
+          conversationId={id}
           messages={session.messages}
           busy={session.isBusy}
           error={session.error}
