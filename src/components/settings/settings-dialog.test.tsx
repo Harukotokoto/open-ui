@@ -132,6 +132,28 @@ describe("SettingsDialog", () => {
     );
   });
 
+  it("Shift+Enterの動きを送信に切り替えて保存する", async () => {
+    vi.mocked(updateUiSettings).mockResolvedValue({
+      sidebarOpen: false,
+      shiftEnter: "send",
+    });
+    renderDialog();
+    const user = userEvent.setup();
+
+    expect(await screen.findByRole("button", { name: "改行" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await user.click(screen.getByRole("button", { name: "送信" }));
+
+    await waitFor(() =>
+      expect(updateUiSettings).toHaveBeenCalledWith({
+        sidebarOpen: false,
+        shiftEnter: "send",
+      }),
+    );
+  });
+
   it("生成の設定は、入力が止まると自動で保存する", async () => {
     useSettingsDialogStore.setState({ category: "generation" });
     vi.mocked(updateGenerationSettings).mockImplementation(

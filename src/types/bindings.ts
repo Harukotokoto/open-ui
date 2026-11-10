@@ -238,6 +238,14 @@ export type SaveConversation = {
 	messages: unknown[],
 };
 
+/**
+ *  入力欄でShift+Enterを押したときの動き。
+ * 
+ *  `newline` は「Enterで送信・Shift+Enterで改行」、
+ *  `send` は「Shift+Enterで送信・Enterで改行」。
+ */
+export type ShiftEnterBehavior = "newline" | "send";
+
 /**  テーマの選択。`system` はOSの設定に従う。 */
 export type Theme = "system" | "light" | "dark";
 
@@ -247,6 +255,8 @@ export type UiSettings = {
 	sidebarOpen?: boolean,
 	/**  テーマの選択 */
 	theme?: Theme,
+	/**  入力欄でShift+Enterを押したときの動き */
+	shiftEnter?: ShiftEnterBehavior,
 };
 
 /**
