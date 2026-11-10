@@ -1,4 +1,4 @@
-import { ArrowUpIcon, SquareIcon } from "lucide-react";
+﻿import { ArrowUpIcon, PlusIcon, SquareIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import {
   InputGroup,
@@ -55,8 +55,7 @@ export function Composer({
 
   return (
     <form ref={formRef} onSubmit={submit} className="w-full">
-      {/* 枠は目立たせず、フォーカス時は枠の色だけを少し変える(太いリングは出さない) */}
-      <InputGroup className="rounded-3xl border-border bg-card shadow-sm transition-[border-color,box-shadow] focus-within:border-ring/60 focus-within:shadow-md has-[[data-slot=input-group-control]:focus-visible]:border-ring/60 has-[[data-slot=input-group-control]:focus-visible]:ring-0">
+      <InputGroup>
         <InputGroupTextarea
           value={text}
           onChange={(event) => setText(event.target.value)}
@@ -65,9 +64,20 @@ export function Composer({
           aria-label="メッセージ"
           rows={1}
           autoFocus={autoFocus}
-          className="max-h-60 min-h-10 px-4 pt-4 pb-1 text-[14px] leading-6 md:text-[14px]"
+          className="max-h-60 p-3 text-[14px] md:text-[14px]"
         />
-        <InputGroupAddon align="block-end" className="px-3 pt-0 pb-3">
+        <InputGroupAddon align="block-end">
+          {/* 添付は未実装。機能を入れるまで押せない状態にしておく */}
+          <InputGroupButton
+            type="button"
+            variant="outline"
+            size="icon-sm"
+            className="rounded-full"
+            disabled
+            aria-label="ファイルを添付(準備中)"
+          >
+            <PlusIcon />
+          </InputGroupButton>
           {busy ? (
             <InputGroupButton
               variant="default"
