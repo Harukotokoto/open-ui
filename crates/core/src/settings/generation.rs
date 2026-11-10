@@ -54,14 +54,27 @@ impl GenerationSettings {
         }
     }
 
-    /// システムプロンプトがあれば、先頭に付けたメッセージ列を返す。
-    pub fn with_system_prompt(&self, messages: &[WireMessage]) -> Vec<WireMessage> {
-        let prompt = self.system_prompt.trim();
+    /// システムプロンプトと書式の説明(`guide`)があれば、先頭に付けたメッセージ列を返す。
+    ///
+    /// 2つは1つのシステムメッセージにまとめる(システムメッセージを複数または先頭以外に置くと、
+    /// チャットテンプレートによってはエラーになるため)。順序は、ユーザーのプロンプト、書式の説明。
+    pub fn with_system_prompt(
+        &self,
+        messages: &[WireMessage],
+        guide: Option<&str>,
+    ) -> Vec<WireMessage> {
+        let system = [Some(self.system_prompt.as_str()), guide]
+            .into_iter()
+            .flatten()
+            .map(str::trim)
+            .filter(|text| !text.is_empty())
+            .collect::<Vec<_>>()
+            .join("\n\n");
         let mut all = Vec::with_capacity(messages.len() + 1);
-        if !prompt.is_empty() {
+        if !system.is_empty() {
             all.push(WireMessage {
                 role: Role::System,
-                content: prompt.to_owned(),
+                content: system,
             });
         }
         all.extend_from_slice(messages);
@@ -87,7 +100,7 @@ mod tests {
 
         assert!(settings.validate().is_ok());
         assert_eq!(settings.params(), GenerationParams::default());
-        assert_eq!(settings.with_system_prompt(&user("hi")), user("hi"));
+        assert_eq!(settings.with_system_prompt(&user("hi"), None), user("hi"));
     }
 
     #[test]
@@ -97,7 +110,7 @@ mod tests {
             ..Default::default()
         };
 
-        let messages = settings.with_system_prompt(&user("hi"));
+        let messages = settings.with_system_prompt(&user("hi"), None);
 
         assert_eq!(messages.len(), 2);
         assert_eq!(messages[0].role, Role::System);
@@ -112,7 +125,32 @@ mod tests {
             ..Default::default()
         };
 
-        assert_eq!(settings.with_system_prompt(&user("hi")), user("hi"));
+        assert_eq!(settings.with_system_prompt(&user("hi"), None), user("hi"));
+    }
+
+    #[test]
+    fn the_guide_follows_the_prompt_in_one_system_message() {
+        let settings = GenerationSettings {
+            system_prompt: "簡潔に答える".into(),
+            ..Default::default()
+        };
+
+        let messages = settings.with_system_prompt(&user("hi"), Some("\n書式の説明\n"));
+
+        assert_eq!(messages.len(), 2);
+        assert_eq!(messages[0].role, Role::System);
+        assert_eq!(messages[0].content, "簡潔に答える\n\n書式の説明");
+    }
+
+    #[test]
+    fn the_guide_alone_is_sent_and_a_blank_guide_is_not() {
+        let settings = GenerationSettings::default();
+
+        let with_guide = settings.with_system_prompt(&user("hi"), Some("書式の説明"));
+        let blank_guide = settings.with_system_prompt(&user("hi"), Some("  "));
+
+        assert_eq!(with_guide[0].content, "書式の説明");
+        assert_eq!(blank_guide, user("hi"));
     }
 
     #[test]

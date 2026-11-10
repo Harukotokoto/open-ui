@@ -109,6 +109,14 @@ export type ChatEvent =
 { type: "delta"; text: string } | 
 /**  思考の増分 */
 { type: "reasoning"; text: string } | 
+/**  出力の統計。出力があったときだけ、`Done` の直前に1回届く(中断・JSON応答では届かない) */
+{ type: "stats"; 
+/**  出力したトークン数(思考を含む) */
+tokens: number; 
+/**  最初の出力から最後の出力までの時間(ミリ秒)。待ち時間(プロンプトの処理)は含まない */
+elapsedMs: number; 
+/**  サーバーが数を返さず、受け取ったチャンクの数で代用したとき `true` */
+estimated: boolean } | 
 /**  完了(中断された場合も含む) */
 { type: "done" } | 
 /**  失敗。メッセージは日本語 */
@@ -125,6 +133,11 @@ export type ChatRequest = {
 	profileId: string,
 	/**  思考(reasoning)は含めない */
 	messages: WireMessage[],
+	/**
+	 *  画面が描ける書式(独自コンポーネントなど)をAIに伝える説明。システムプロンプトの後ろに足す。
+	 *  画面の部品と同じ場所で管理するため、フロントが渡す。無ければ足さない
+	 */
+	formatGuide?: string | null,
 };
 
 /**

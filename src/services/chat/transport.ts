@@ -22,6 +22,8 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
   constructor(
     private readonly backend: ChatBackend,
     private readonly getProfileId: () => string,
+    /** 画面が描ける書式の説明。AIに伝える(Rustがシステムプロンプトの後ろに足す)。 */
+    private readonly getFormatGuide: () => string | undefined = () => undefined,
   ) {}
 
   async sendMessages({
@@ -72,6 +74,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
           requestId,
           profileId: this.getProfileId(),
           messages: toWireMessages(messages),
+          formatGuide: this.getFormatGuide(),
         },
         onEvent,
       )

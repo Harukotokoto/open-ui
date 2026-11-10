@@ -57,6 +57,34 @@ describe("TauriChatTransport", () => {
     expect(chunks.at(-1)).toEqual({ type: "finish" });
   });
 
+  it("書式の説明があれば、リクエストに付ける", async () => {
+    const requests: ChatRequest[] = [];
+    const backend: ChatBackend = {
+      start: vi.fn(async (request, onEvent) => {
+        requests.push(request);
+        onEvent({ type: "done" });
+      }),
+      cancel: vi.fn().mockResolvedValue(undefined),
+    };
+    const transport = new TauriChatTransport(
+      backend,
+      () => "default",
+      () => "書式の説明",
+    );
+
+    await readAll(
+      await transport.sendMessages({
+        trigger: "submit-message",
+        chatId: "c1",
+        messageId: undefined,
+        messages: [userMessage],
+        abortSignal: undefined,
+      }),
+    );
+
+    expect(requests[0]?.formatGuide).toBe("書式の説明");
+  });
+
   it("コマンド自体が失敗したら、エラーのチャンクで伝える", async () => {
     const backend: ChatBackend = {
       start: vi.fn().mockRejectedValue(new Error("通信できません")),

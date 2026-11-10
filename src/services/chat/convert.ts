@@ -73,6 +73,21 @@ export function createEventConverter(): EventConverter {
           return delta("text", event.text);
         case "reasoning":
           return delta("reasoning", event.text);
+        case "stats":
+          // 出力の前には届かないはずだが、メッセージを始めていなければ何も作らない
+          if (!started) return [];
+          return [
+            {
+              type: "message-metadata",
+              messageMetadata: {
+                stats: {
+                  tokens: event.tokens,
+                  elapsedMs: event.elapsedMs,
+                  estimated: event.estimated,
+                },
+              },
+            },
+          ];
         case "done":
           finished = true;
           return [
