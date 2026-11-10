@@ -61,8 +61,10 @@ jobs:
           # 再実行で、すでにドラフトがあるときは作り直さずに使う
           release_id=$(find_release_id)
           if [ -z "$release_id" ]; then
-            gh release create "$TAG" --draft --verify-tag --generate-notes --title "open-ui $TAG"
-            release_id=$(find_release_id)
+            # 作成直後は一覧に反映されないことがあるため、作成のレスポンスからIDを受け取る
+            release_id=$(gh api --method POST "repos/$GH_REPO/releases" \
+              -f tag_name="$TAG" -f name="open-ui $TAG" \
+              -F draft=true -F generate_release_notes=true --jq .id)
           fi
           if [ -z "$release_id" ]; then
             echo "::error::リリースのIDを取得できませんでした"
