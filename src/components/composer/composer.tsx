@@ -65,7 +65,7 @@ export function Composer({
           aria-label="メッセージ"
           rows={1}
           autoFocus={autoFocus}
-          className="max-h-60 min-h-10 px-4 pt-4 pb-1 text-base leading-6 md:text-base"
+          className="max-h-60 min-h-10 px-4 pt-4 pb-1 text-[14px] leading-6 md:text-[14px]"
         />
         <InputGroupAddon align="block-end" className="px-3 pt-0 pb-3">
           {busy ? (
