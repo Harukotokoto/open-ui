@@ -4,6 +4,7 @@ import { ReplyStatsLine } from "@/components/chat/reply-stats-line";
 import { ReplyText } from "@/components/chat/reply-text";
 import { Message, MessageContent } from "@/components/ui/message";
 import { Trace } from "@/components/ui/trace";
+import { getReasoningMs } from "@/lib/reasoning-duration";
 import { getReplyStats } from "@/lib/reply-stats";
 
 interface AssistantMessageProps {
@@ -31,6 +32,7 @@ export function AssistantMessage({
                   text={part.text}
                   // 中断された思考は`streaming`のまま残るので、生成中の返答に限る
                   running={streaming && part.state === "streaming"}
+                  durationMs={getReasoningMs(part.providerMetadata)}
                 />
               </Trace>
             );

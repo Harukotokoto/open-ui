@@ -125,6 +125,19 @@ describe("createEventConverter", () => {
     ]);
   });
 
+  it("思考を閉じるとき、思考にかかった時間を添える", () => {
+    let time = 1000;
+    const converter = createEventConverter(() => time);
+    converter.push({ type: "reasoning", text: "ええと" });
+    time = 4200;
+    const chunks = converter.push({ type: "delta", text: "答え" });
+
+    const end = chunks.find((c) => c.type === "reasoning-end");
+    expect(end).toMatchObject({
+      providerMetadata: { openUi: { reasoningMs: 3200 } },
+    });
+  });
+
   it("何も受け取らずに完了しても、開始から終了まで揃える", () => {
     expect(convert([{ type: "done" }]).map((c) => c.type)).toEqual([
       "start",

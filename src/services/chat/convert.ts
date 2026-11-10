@@ -1,6 +1,7 @@
 import type { UIMessage, UIMessageChunk } from "ai";
 import { attachmentIdOf, getAttachmentParts } from "@/lib/attachments";
 import { getMessageText } from "@/lib/messages";
+import { toReasoningMetadata } from "@/lib/reasoning-duration";
 import type { ChatEvent, ChatMessage } from "@/types/bindings";
 
 /**
@@ -34,10 +35,13 @@ export interface EventConverter {
 
 type PartKind = "text" | "reasoning";
 
-export function createEventConverter(): EventConverter {
+/** `now`は経過時間の計測に使う時計(テストで差し替える)。 */
+export function createEventConverter(
+  now: () => number = Date.now,
+): EventConverter {
   let started = false;
   let finished = false;
-  let open: { kind: PartKind; id: string } | null = null;
+  let open: { kind: PartKind; id: string; startedAt: number } | null = null;
   const counters: Record<PartKind, number> = { text: 0, reasoning: 0 };
 
   const begin = (): UIMessageChunk[] => {
@@ -51,7 +55,11 @@ export function createEventConverter(): EventConverter {
     const chunk: UIMessageChunk =
       open.kind === "text"
         ? { type: "text-end", id: open.id }
-        : { type: "reasoning-end", id: open.id };
+        : {
+            type: "reasoning-end",
+            id: open.id,
+            providerMetadata: toReasoningMetadata(now() - open.startedAt),
+          };
     open = null;
     return [chunk];
   };
@@ -62,7 +70,7 @@ export function createEventConverter(): EventConverter {
     if (open?.kind !== kind) {
       chunks.push(...closeOpen());
       const id = `${kind}-${counters[kind]++}`;
-      open = { kind, id };
+      open = { kind, id, startedAt: now() };
       chunks.push(
         kind === "text"
           ? { type: "text-start", id }
