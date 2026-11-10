@@ -13,6 +13,18 @@ pub enum Theme {
     Dark,
 }
 
+/// 入力欄でShift+Enterを押したときの動き。
+///
+/// `newline` は「Enterで送信・Shift+Enterで改行」、
+/// `send` は「Shift+Enterで送信・Enterで改行」。
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum ShiftEnterBehavior {
+    #[default]
+    Newline,
+    Send,
+}
+
 /// 画面の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase", default)]
@@ -21,6 +33,8 @@ pub struct UiSettings {
     pub sidebar_open: bool,
     /// テーマの選択
     pub theme: Theme,
+    /// 入力欄でShift+Enterを押したときの動き
+    pub shift_enter: ShiftEnterBehavior,
 }
 
 impl Default for UiSettings {
@@ -28,6 +42,7 @@ impl Default for UiSettings {
         Self {
             sidebar_open: true,
             theme: Theme::default(),
+            shift_enter: ShiftEnterBehavior::default(),
         }
     }
 }
@@ -42,6 +57,24 @@ mod tests {
 
         assert!(!ui.sidebar_open);
         assert_eq!(ui.theme, Theme::System);
+    }
+
+    #[test]
+    fn a_missing_shift_enter_falls_back_to_newline() {
+        let ui: UiSettings = serde_json::from_str(r#"{"theme":"dark"}"#).unwrap();
+
+        assert_eq!(ui.shift_enter, ShiftEnterBehavior::Newline);
+    }
+
+    #[test]
+    fn shift_enter_is_camel_case_in_json() {
+        let ui: UiSettings = serde_json::from_str(r#"{"shiftEnter":"send"}"#).unwrap();
+
+        assert_eq!(ui.shift_enter, ShiftEnterBehavior::Send);
+        assert_eq!(
+            serde_json::to_string(&ShiftEnterBehavior::Newline).unwrap(),
+            r#""newline""#
+        );
     }
 
     #[test]

@@ -6,6 +6,8 @@ import {
   InputGroupAddon,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
+import { useUiSettings } from "@/hooks/use-ui-settings";
+import { isJustComposed, shouldSendOnEnter } from "@/lib/composer-keys";
 import { cn } from "@/lib/utils";
 
 interface ComposerProps {
@@ -36,7 +38,7 @@ interface ComposerProps {
 const GROUP_CLASS =
   "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-disabled:bg-transparent has-disabled:opacity-100 dark:has-disabled:bg-input/30";
 
-/** メッセージの入力欄。Enterで送信、Shift+Enterで改行。返答中は送信ボタンが停止ボタンになる。 */
+/** メッセージの入力欄。Enterで送信、Shift+Enterで改行(設定で逆にできる)。返答中は送信ボタンが停止ボタンになる。 */
 export function Composer({
   onSend,
   onStop,
@@ -50,6 +52,9 @@ export function Composer({
 }: ComposerProps) {
   const [text, setText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  /** 直近の変換の終了時刻(`compositionend` の `timeStamp`) */
+  const compositionEndedAt = useRef<number | null>(null);
+  const shiftEnter = useUiSettings().data?.shiftEnter ?? "newline";
   const canSend = text.trim() !== "" && !busy && !sendDisabled;
 
   const submit = (event: React.FormEvent) => {
@@ -60,14 +65,21 @@ export function Composer({
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // 日本語入力の変換を確定するEnterでは、送信しない
-    if (
-      event.key !== "Enter" ||
-      event.shiftKey ||
-      event.nativeEvent.isComposing
-    ) {
-      return;
-    }
+    // 変換を確定するEnterでは送信しない(macOSでは isComposing が偽になるため、判定を分けてある)
+    const send = shouldSendOnEnter(
+      {
+        key: event.key,
+        shiftKey: event.shiftKey,
+        isComposing: event.nativeEvent.isComposing,
+        keyCode: event.keyCode,
+        justComposed: isJustComposed(
+          compositionEndedAt.current,
+          event.timeStamp,
+        ),
+      },
+      shiftEnter,
+    );
+    if (!send) return;
     event.preventDefault();
     formRef.current?.requestSubmit();
   };
@@ -77,6 +89,9 @@ export function Composer({
       value={text}
       onChange={(event) => setText(event.target.value)}
       onKeyDown={handleKeyDown}
+      onCompositionEnd={(event) => {
+        compositionEndedAt.current = event.timeStamp;
+      }}
       placeholder={placeholder}
       aria-label="メッセージ"
       rows={1}
