@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 use open_ui_core::api::ApiClient;
 use open_ui_core::error::AppError;
+use open_ui_core::history::HistoryStore;
 use open_ui_core::profiles::ProfileService;
 use open_ui_core::secrets::KeyringStore;
 use open_ui_core::settings::SettingsStore;
@@ -14,13 +15,17 @@ pub struct AppState {
     pub profiles: Arc<ProfileService>,
     /// 設定ファイル。プロファイルと画面の設定が同じファイルなので、`profiles` と共有する
     pub settings: Arc<SettingsStore>,
+    /// チャット履歴(`<データディレクトリ>/history/<id>.json`)
+    pub history: Arc<HistoryStore>,
 }
 
 impl AppState {
     /// `data_dir` はアプリのデータディレクトリ。
     pub fn new(data_dir: PathBuf) -> Result<Self, AppError> {
+        let history = Arc::new(HistoryStore::new(data_dir.join("history")));
         let settings = Arc::new(SettingsStore::new(data_dir));
         Ok(Self {
+            history,
             api: ApiClient::new()?,
             profiles: Arc::new(ProfileService::new(
                 settings.clone(),

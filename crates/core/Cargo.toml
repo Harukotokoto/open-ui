@@ -9,7 +9,9 @@ description = "open-ui の Tauri 非依存のロジックと型(API・履歴・�
 [dependencies]
 serde.workspace = true
 serde_json.workspace = true
-specta = { workspace = true, features = ["derive", "serde_json"] }
+specta = { workspace = true, features = ["derive"] }
+# `serde_json::Value` の型を `unknown` に上書きするために使う(型の書き出しはしない)
+specta-typescript.workspace = true
 reqwest.workspace = true
 futures-util.workspace = true
 keyring.workspace = true

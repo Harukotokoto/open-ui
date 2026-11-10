@@ -31,6 +31,18 @@ pub struct Conversation {
     pub title: String,
     pub created_at: u32,
     pub updated_at: u32,
+    // `Value` の型はi64を含み、TypeScriptへ書き出せない(BigInt禁止)ため `unknown` に上書きする
+    #[specta(type = Vec<specta_typescript::Unknown>)]
+    pub messages: Vec<Value>,
+}
+
+/// 会話の保存の依頼。メッセージが空なら何も保存しない。
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveConversation {
+    /// フロントが発行するUUID。新しい会話もこのIDで保存される
+    pub id: String,
+    #[specta(type = Vec<specta_typescript::Unknown>)]
     pub messages: Vec<Value>,
 }
 

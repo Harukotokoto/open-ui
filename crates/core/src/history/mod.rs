@@ -9,7 +9,9 @@ mod title;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
-pub use model::{Conversation, ConversationSummary, HISTORY_VERSION, HistoryListing};
+pub use model::{
+    Conversation, ConversationSummary, HISTORY_VERSION, HistoryListing, SaveConversation,
+};
 pub use store::HistoryStore;
 
 /// 現在の時刻(UNIX秒)。保存の関数は時刻を引数で受け取るので、呼び出し側がこれを渡す。

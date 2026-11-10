@@ -15,6 +15,16 @@ export const commands = {
 	chatStart: (request: ChatRequest, onEvent: Channel<ChatEvent>) => typedError<null, AppError>(__TAURI_INVOKE("chat_start", { request, onEvent })),
 	/**  実行中の返答の生成を中断する。完了済み・存在しないIDでも何も起きない。 */
 	chatCancel: (requestId: string) => __TAURI_INVOKE<void>("chat_cancel", { requestId }),
+	/**  履歴の一覧(更新が新しい順)。メッセージは含まない。 */
+	historyList: () => typedError<HistoryListing, AppError>(__TAURI_INVOKE("history_list")),
+	/**  会話1件(メッセージを含む)。 */
+	historyLoad: (id: string) => typedError<Conversation, AppError>(__TAURI_INVOKE("history_load", { id })),
+	/**  会話を保存する。メッセージが空なら何も保存せず `None`。 */
+	historySave: (conversation: SaveConversation) => typedError<ConversationSummary | null, AppError>(__TAURI_INVOKE("history_save", { conversation })),
+	/**  会話の名前を変える。 */
+	historyRename: (id: string, title: string) => typedError<ConversationSummary, AppError>(__TAURI_INVOKE("history_rename", { id, title })),
+	/**  会話を削除する。 */
+	historyDelete: (id: string) => typedError<null, AppError>(__TAURI_INVOKE("history_delete", { id })),
 	/**  プロファイルの一覧と、使用中のプロファイル。 */
 	profilesGet: () => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_get")),
 	/**  既存のプロファイルを更新する。入力を検査し、更新後の一覧を返す。 */
@@ -112,6 +122,35 @@ export type ConnectionProfile = {
 	selectedModel?: string | null,
 };
 
+/**
+ *  会話1件。`messages` はフロントの `UIMessage`(parts形式)をそのまま持つ。
+ * 
+ *  中身の形(添付・ツール呼び出しなどのパーツ)はフロントが増やしていくため、Rustでは解釈しない。
+ */
+export type Conversation = {
+	id: string,
+	title: string,
+	createdAt: number,
+	updatedAt: number,
+	messages: unknown[],
+};
+
+/**  一覧に出す1件。メッセージ本文は含まない。時刻はUNIX秒。 */
+export type ConversationSummary = {
+	id: string,
+	title: string,
+	createdAt: number,
+	updatedAt: number,
+};
+
+/**  履歴の一覧。読めなかったファイルは一覧に入れず、件数だけ知らせる(ファイルには触らない)。 */
+export type HistoryListing = {
+	/**  更新が新しい順 */
+	conversations: ConversationSummary[],
+	/**  壊れている、または新しいversionのため一覧から外したファイルの数 */
+	skipped: number,
+};
+
 /**  キーの状態。設定画面の表示用。 */
 export type KeyStatus = 
 /**  キーは設定されていない */
@@ -139,6 +178,13 @@ export type ProviderKind =
 
 /**  会話の発言者。 */
 export type Role = "system" | "user" | "assistant";
+
+/**  会話の保存の依頼。メッセージが空なら何も保存しない。 */
+export type SaveConversation = {
+	/**  フロントが発行するUUID。新しい会話もこのIDで保存される */
+	id: string,
+	messages: unknown[],
+};
 
 /**  画面の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。 */
 export type UiSettings = {
