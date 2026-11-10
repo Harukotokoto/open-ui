@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
+/* フォーカス時に枠(リング・枠線の色の変化)を出さない。`focus-visible:` の指定を無効にする */
+@custom-variant focus-visible (&:not(*));
 
 /*
  * テーマ(ニュートラルなグレー系)
@@ -55,10 +57,11 @@
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* 角丸の上限は入力ボックス(`rounded-lg`)。それより大きい指定も同じ大きさにする */
+  --radius-xl: var(--radius);
+  --radius-2xl: var(--radius);
+  --radius-3xl: var(--radius);
+  --radius-4xl: var(--radius);
 }
 
 :root {
@@ -133,6 +136,10 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  /* ブラウザ標準のフォーカス枠も出さない(`focus-visible:` のリングは上のカスタムバリアントで無効) */
+  :focus-visible {
+    outline: none;
   }
   html {
     @apply font-sans;

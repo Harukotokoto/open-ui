@@ -177,6 +177,29 @@ impl HistoryStore {
         Ok(summary(id, &file))
     }
 
+    /// AIが考えたタイトルを付ける。ユーザーが名前を変えていたら上書きせず `None`。
+    ///
+    /// 「名前を変えていない」とは、タイトルが最初の発言から作った自動のタイトルのままであること。
+    /// 生成には時間がかかるので、その間の名前の変更を消さないために、書く直前に確かめる。
+    pub fn set_generated_title(
+        &self,
+        id: &str,
+        title: &str,
+    ) -> Result<Option<ConversationSummary>, AppError> {
+        let path = self.path_for(id)?;
+        let title = normalize_title(title)?;
+
+        let _guard = self.guard();
+        let mut file: ConversationFile = read_json(&path).map_err(ReadError::into_app_error)?;
+        if file.title != derive_title(&file.messages) {
+            return Ok(None);
+        }
+        file.version = HISTORY_VERSION;
+        file.title = title;
+        write_file(&path, &file)?;
+        Ok(Some(summary(id, &file)))
+    }
+
     /// 会話を削除する。すでに無ければ何もしない。
     pub fn delete(&self, id: &str) -> Result<(), AppError> {
         let path = self.path_for(id)?;
@@ -379,6 +402,52 @@ mod tests {
         );
         assert_eq!(
             store.rename("missing", "x").unwrap_err().kind,
+            AppErrorKind::NotFound
+        );
+        assert_eq!(store.load("c1").unwrap().title, "a");
+    }
+
+    #[test]
+    fn a_generated_title_replaces_the_automatic_one_without_touching_the_rest() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = store(dir.path());
+        let messages = vec![user("a"), assistant("b")];
+        store.save("c1", messages.clone(), 1000).unwrap();
+
+        let titled = store
+            .set_generated_title("c1", " 京都 旅行の計画 ")
+            .unwrap()
+            .unwrap();
+
+        assert_eq!(titled.title, "京都 旅行の計画");
+        assert_eq!(titled.updated_at, 1000);
+        assert_eq!(store.load("c1").unwrap().messages, messages);
+    }
+
+    #[test]
+    fn a_generated_title_never_overwrites_a_name_the_user_chose() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = store(dir.path());
+        store.save("c1", vec![user("a")], 1).unwrap();
+        store.rename("c1", "自分で付けた名前").unwrap();
+
+        assert_eq!(store.set_generated_title("c1", "AIの案").unwrap(), None);
+
+        assert_eq!(store.load("c1").unwrap().title, "自分で付けた名前");
+    }
+
+    #[test]
+    fn a_generated_title_rejects_blank_input_and_unknown_conversations() {
+        let dir = tempfile::tempdir().unwrap();
+        let store = store(dir.path());
+        store.save("c1", vec![user("a")], 1).unwrap();
+
+        assert_eq!(
+            store.set_generated_title("c1", " ").unwrap_err().kind,
+            AppErrorKind::InvalidInput
+        );
+        assert_eq!(
+            store.set_generated_title("missing", "x").unwrap_err().kind,
             AppErrorKind::NotFound
         );
         assert_eq!(store.load("c1").unwrap().title, "a");

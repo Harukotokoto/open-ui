@@ -31,6 +31,18 @@ export function renameConversation(
   return unwrap(commands.historyRename(id, title));
 }
 
+/**
+ * AIに会話のタイトルを考えさせて、付ける。付けたら更新後の要約を返す。
+ * 返答がまだ無い・答えが使えない・生成中に名前を変えられた場合は、何も変えず `null`。
+ * 失敗したときは例外。どちらでも、最初の発言から作ったタイトルはそのまま残る。
+ */
+export function generateConversationTitle(
+  id: string,
+  profileId: string,
+): Promise<ConversationSummary | null> {
+  return unwrap(commands.historyGenerateTitle(id, profileId));
+}
+
 export async function deleteConversation(id: string): Promise<void> {
   await unwrap(commands.historyDelete(id));
 }

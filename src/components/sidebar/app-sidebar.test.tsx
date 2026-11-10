@@ -17,6 +17,7 @@ vi.mock("@/services/history", () => ({
   loadConversation: vi.fn(),
   saveConversation: vi.fn(),
   renameConversation: vi.fn(),
+  generateConversationTitle: vi.fn(),
   deleteConversation: vi.fn(),
 }));
 

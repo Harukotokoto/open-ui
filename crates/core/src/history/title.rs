@@ -22,8 +22,13 @@ pub(super) fn derive_title(messages: &[Value]) -> String {
     if collapsed.is_empty() {
         return FALLBACK_TITLE.to_owned();
     }
+    shorten(&collapsed)
+}
+
+/// 空白を整えたあとの文字列を、長ければ切って `…` を付ける。AIが作ったタイトルにも使う。
+pub(super) fn shorten(collapsed: &str) -> String {
     if collapsed.chars().count() <= AUTO_TITLE_CHARS {
-        return collapsed;
+        return collapsed.to_owned();
     }
     let mut title: String = collapsed.chars().take(AUTO_TITLE_CHARS).collect();
     title.truncate(title.trim_end().len());
@@ -46,7 +51,7 @@ pub(super) fn normalize_title(input: &str) -> Result<String, AppError> {
 }
 
 /// メッセージのtextパーツをつないだもの。
-fn message_text(message: &Value) -> String {
+pub(super) fn message_text(message: &Value) -> String {
     message["parts"]
         .as_array()
         .into_iter()
@@ -56,7 +61,7 @@ fn message_text(message: &Value) -> String {
         .collect()
 }
 
-fn collapse_whitespace(text: &str) -> String {
+pub(super) fn collapse_whitespace(text: &str) -> String {
     text.split_whitespace().collect::<Vec<_>>().join(" ")
 }
 

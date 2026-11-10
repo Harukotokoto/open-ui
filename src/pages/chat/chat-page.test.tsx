@@ -5,7 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatPage } from "@/pages/chat/chat-page";
 import { startChat } from "@/services/chat/ipc";
-import { loadConversation, saveConversation } from "@/services/history";
+import {
+  generateConversationTitle,
+  loadConversation,
+  saveConversation,
+} from "@/services/history";
 import { useConversationStore } from "@/stores/conversation-store";
 
 vi.mock("@/services/chat/ipc", () => ({
@@ -18,6 +22,7 @@ vi.mock("@/services/history", () => ({
   loadConversation: vi.fn(),
   saveConversation: vi.fn().mockResolvedValue(null),
   renameConversation: vi.fn(),
+  generateConversationTitle: vi.fn().mockResolvedValue(null),
   deleteConversation: vi.fn(),
 }));
 
@@ -62,6 +67,7 @@ describe("ChatPage", () => {
   beforeEach(() => {
     vi.mocked(startChat).mockReset();
     vi.mocked(saveConversation).mockClear();
+    vi.mocked(generateConversationTitle).mockClear();
     vi.mocked(loadConversation).mockReset();
     useConversationStore.setState({ activeId: "chat-1", existing: false });
   });
@@ -104,6 +110,16 @@ describe("ChatPage", () => {
     expect(
       screen.queryByRole("heading", { name: "今日は何をしましょうか?" }),
     ).not.toBeInTheDocument();
+    // 会話の途中は、1行の入力欄と注意書きに変わる
+    expect(
+      screen.getByText(
+        "AIは間違えることがあります。回答は必ずご確認ください。",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "メッセージ" })).toHaveAttribute(
+      "rows",
+      "1",
+    );
   });
 
   it("失敗したら、メッセージと、やり直し・接続設定の操作を出す", async () => {
@@ -174,6 +190,67 @@ describe("ChatPage", () => {
     expect(screen.getByText("前の発言")).toBeInTheDocument();
     view.unmount();
     expect(saveConversation).not.toHaveBeenCalled();
+    expect(generateConversationTitle).not.toHaveBeenCalled();
+  });
+
+  it("最初の返答が終わって保存したら、AIにタイトルを考えさせる(1つの会話で1回だけ)", async () => {
+    vi.mocked(startChat).mockImplementation(async (_request, onEvent) => {
+      onEvent({ type: "delta", text: "やあ" });
+      onEvent({ type: "done" });
+    });
+    renderPage();
+
+    await send("こんにちは");
+    await waitFor(() =>
+      expect(generateConversationTitle).toHaveBeenCalledWith(
+        "chat-1",
+        "default",
+      ),
+    );
+    // タイトルの依頼は、会話を保存したあとに出す
+    const [saveOrder] = vi.mocked(saveConversation).mock.invocationCallOrder;
+    const [titleOrder] = vi.mocked(generateConversationTitle).mock
+      .invocationCallOrder;
+    expect(titleOrder).toBeGreaterThan(saveOrder);
+
+    await send("もう一つ質問");
+    await waitFor(() =>
+      expect(vi.mocked(saveConversation).mock.calls.at(-1)?.[1]).toHaveLength(
+        4,
+      ),
+    );
+    expect(generateConversationTitle).toHaveBeenCalledTimes(1);
+  });
+
+  it("タイトルの生成に失敗しても、会話はそのまま続けられる", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.mocked(generateConversationTitle).mockRejectedValueOnce(
+      new Error("接続できません"),
+    );
+    vi.mocked(startChat).mockImplementation(async (_request, onEvent) => {
+      onEvent({ type: "delta", text: "やあ" });
+      onEvent({ type: "done" });
+    });
+    renderPage();
+
+    await send("こんにちは");
+
+    await waitFor(() => expect(warn).toHaveBeenCalled());
+    expect(screen.getByText("やあ")).toBeInTheDocument();
+    warn.mockRestore();
+  });
+
+  it("返答に失敗した会話では、タイトルを考えさせない", async () => {
+    vi.mocked(startChat).mockImplementation(async (_request, onEvent) => {
+      onEvent({ type: "error", message: "サーバーに接続できませんでした" });
+    });
+    renderPage();
+
+    await send("やあ");
+
+    await screen.findByText("サーバーに接続できませんでした");
+    await waitFor(() => expect(saveConversation).toHaveBeenCalled());
+    expect(generateConversationTitle).not.toHaveBeenCalled();
   });
 
   it("保存済みの会話を読めないときは、理由と、新しい会話に移る操作を出す", async () => {

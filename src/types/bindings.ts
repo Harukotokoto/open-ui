@@ -23,6 +23,14 @@ export const commands = {
 	historySave: (conversation: SaveConversation) => typedError<ConversationSummary | null, AppError>(__TAURI_INVOKE("history_save", { conversation })),
 	/**  会話の名前を変える。 */
 	historyRename: (id: string, title: string) => typedError<ConversationSummary, AppError>(__TAURI_INVOKE("history_rename", { id, title })),
+	/**
+	 *  AIに会話のタイトルを考えさせて、付ける。付けたら更新後の要約を返す。
+	 * 
+	 *  次のときは何も変えず `None`(失敗ではない): 返答がまだ無い・AIの答えが使えない・生成中にユーザーが
+	 *  名前を変えた。サーバーに接続できないなどの失敗は `Err`。どちらでも、保存時に付けた
+	 *  「最初の発言から作ったタイトル」はそのまま残る。
+	 */
+	historyGenerateTitle: (id: string, profileId: string) => typedError<ConversationSummary | null, AppError>(__TAURI_INVOKE("history_generate_title", { id, profileId })),
 	/**  会話を削除する。 */
 	historyDelete: (id: string) => typedError<null, AppError>(__TAURI_INVOKE("history_delete", { id })),
 	/**  プロファイルの一覧と、使用中のプロファイル。 */

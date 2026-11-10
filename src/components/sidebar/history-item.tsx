@@ -29,7 +29,7 @@ export function HistoryItem({
   onDelete,
 }: HistoryItemProps) {
   return (
-    <SidebarMenuItem>
+    <SidebarMenuItem className="mb-1">
       <SidebarMenuButton
         isActive={active}
         aria-current={active ? "page" : undefined}
