@@ -2,6 +2,7 @@ import { type ReactNode, useState } from "react";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { UpdateDialog } from "@/components/update/update-dialog";
 import { useUiSettings, useUpdateUiSettings } from "@/hooks/use-ui-settings";
 
 /**
@@ -39,6 +40,8 @@ function Shell({
       <AppSidebar />
       <SidebarInset className="h-svh min-w-0">{children}</SidebarInset>
       <SettingsDialog />
+      {/* 開発中(`pnpm tauri dev`)は更新を確認しない。インストールできないため */}
+      <UpdateDialog enabled={!import.meta.env.DEV} />
     </SidebarProvider>
   );
 }
