@@ -112,6 +112,35 @@ describe("createEventConverter", () => {
     ]);
   });
 
+  it("出力の統計を、メッセージのメタデータにする", () => {
+    const chunks = convert([
+      { type: "delta", text: "こんにちは" },
+      { type: "stats", tokens: 42, elapsedMs: 1500, estimated: false },
+      { type: "done" },
+    ]);
+
+    expect(chunks).toContainEqual({
+      type: "message-metadata",
+      messageMetadata: {
+        stats: { tokens: 42, elapsedMs: 1500, estimated: false },
+      },
+    });
+    // 本文の終了と完了は、これまでどおり揃う
+    expect(chunks.at(-1)).toEqual({ type: "finish" });
+    expect(chunks.filter((chunk) => chunk.type === "text-end")).toHaveLength(1);
+  });
+
+  it("メッセージを始める前の統計は無視する", () => {
+    expect(
+      createEventConverter().push({
+        type: "stats",
+        tokens: 1,
+        elapsedMs: 1,
+        estimated: true,
+      }),
+    ).toEqual([]);
+  });
+
   it("終了後のイベントは無視する", () => {
     const converter = createEventConverter();
     converter.push({ type: "done" });

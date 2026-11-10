@@ -9,6 +9,7 @@ mod connection;
 mod http;
 mod openai;
 mod sse;
+mod stats;
 #[cfg(test)]
 mod test_support;
 mod types;

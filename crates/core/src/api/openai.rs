@@ -1,6 +1,8 @@
 //! OpenAI互換サーバー(`/chat/completions`・`/models`)。
 //! LM Studio・Ollama・llama.cpp・vLLMなど。
 
+use std::time::Instant;
+
 use futures_util::StreamExt;
 use reqwest::{RequestBuilder, Response};
 use serde_json::{Value, json};
@@ -9,6 +11,7 @@ use tokio_util::sync::CancellationToken;
 use super::connection::Connection;
 use super::http::{describe_error, status_error};
 use super::sse::SseLines;
+use super::stats::StreamStats;
 use super::types::{ChatEvent, Emit, GenerationParams, WireMessage};
 use crate::error::AppError;
 
@@ -84,6 +87,8 @@ fn chat_body(model: &str, messages: &[WireMessage], params: GenerationParams) ->
     let mut body = json!({
         "messages": messages,
         "stream": true,
+        // 出力速度(tokens/s)のために、最後にトークン数を返してもらう
+        "stream_options": { "include_usage": true },
     });
     let model = model.trim();
     if !model.is_empty() {
@@ -148,15 +153,16 @@ async fn read_event_stream(
 ) -> Result<(), AppError> {
     let mut stream = response.bytes_stream();
     let mut lines = SseLines::new();
+    let mut stats = StreamStats::default();
 
-    loop {
+    'read: loop {
         let Some(next) = cancel.run_until_cancelled(stream.next()).await else {
             break;
         };
         let Some(chunk) = next else {
             // ストリームの終端。改行で終わらなかった最後の行を処理する
             if let Some(data) = lines.finish() {
-                handle_data(&data, emit)?;
+                handle_data(&data, &mut stats, emit)?;
             }
             break;
         };
@@ -164,19 +170,21 @@ async fn read_event_stream(
             AppError::http(format!("ストリームの受信中にエラーが発生しました: {e}"))
         })?;
         for data in lines.push(&bytes) {
-            if handle_data(&data, emit)? {
-                emit(ChatEvent::Done);
-                return Ok(());
+            if handle_data(&data, &mut stats, emit)? {
+                break 'read;
             }
         }
     }
 
+    if let Some(event) = stats.into_event() {
+        emit(event);
+    }
     emit(ChatEvent::Done);
     Ok(())
 }
 
 /// `data:` 行1件を処理する。`[DONE]` なら `true`。
-fn handle_data(data: &str, emit: Emit<'_>) -> Result<bool, AppError> {
+fn handle_data(data: &str, stats: &mut StreamStats, emit: Emit<'_>) -> Result<bool, AppError> {
     if data == "[DONE]" {
         return Ok(true);
     }
@@ -187,7 +195,15 @@ fn handle_data(data: &str, emit: Emit<'_>) -> Result<bool, AppError> {
     if let Some(message) = error_message(&value) {
         return Err(AppError::http(message));
     }
-    for event in events_of(&value["choices"][0]["delta"]) {
+    // `stream_options.include_usage` を付けると、最後に `choices` が空で `usage` だけのデータが届く
+    if let Some(tokens) = value["usage"]["completion_tokens"].as_u64() {
+        stats.record_usage(tokens);
+    }
+    let events = events_of(&value["choices"][0]["delta"]);
+    if !events.is_empty() {
+        stats.record_output(Instant::now());
+    }
+    for event in events {
         emit(event);
     }
     Ok(false)
@@ -292,6 +308,30 @@ mod tests {
         // 指定が無ければ、サーバーの既定に任せる
         assert!(body.get("temperature").is_none());
         assert!(body.get("max_tokens").is_none());
+    }
+
+    #[test]
+    fn chat_body_asks_for_the_usage_at_the_end_of_the_stream() {
+        let body = chat_body("m", &user("hi"), GenerationParams::default());
+
+        assert_eq!(body["stream_options"]["include_usage"], true);
+    }
+
+    #[test]
+    fn the_usage_data_is_recorded_without_emitting_anything() {
+        let mut stats = StreamStats::default();
+        let mut events = Vec::new();
+
+        let done = handle_data(
+            r#"{"choices":[],"usage":{"prompt_tokens":9,"completion_tokens":42}}"#,
+            &mut stats,
+            &mut |e| events.push(e),
+        )
+        .unwrap();
+
+        assert!(!done);
+        assert!(events.is_empty());
+        assert_eq!(stats.reported_tokens(), Some(42));
     }
 
     #[test]

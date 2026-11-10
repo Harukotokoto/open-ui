@@ -1,10 +1,13 @@
 import { useChat } from "@ai-sdk/react";
 import type { UIMessage } from "ai";
 import { useEffect, useRef, useState } from "react";
+import { buildFormatGuide } from "@/lib/markdown/custom-tags";
 import { cancelChat, startChat } from "@/services/chat/ipc";
 import { TauriChatTransport } from "@/services/chat/transport";
 
 const backend = { start: startChat, cancel: cancelChat };
+/** 画面が描ける書式(Markdownと独自タグ)をAIに伝える説明。常に付ける。 */
+const FORMAT_GUIDE = buildFormatGuide();
 
 interface ChatSessionOptions {
   /** 会話のID。保存先のファイル名にもなる。 */
@@ -28,7 +31,12 @@ export function useChatSession(
   }, [profileId]);
 
   const [transport] = useState(
-    () => new TauriChatTransport(backend, () => profileIdRef.current ?? ""),
+    () =>
+      new TauriChatTransport(
+        backend,
+        () => profileIdRef.current ?? "",
+        () => FORMAT_GUIDE,
+      ),
   );
   const chat = useChat({ id, messages: initialMessages, transport });
 

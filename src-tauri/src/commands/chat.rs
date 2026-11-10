@@ -42,7 +42,8 @@ pub async fn chat_start(
     };
     match prepared {
         Ok((connection, generation)) => {
-            let messages = generation.with_system_prompt(&request.messages);
+            let messages =
+                generation.with_system_prompt(&request.messages, request.format_guide.as_deref());
             state
                 .api
                 .chat(

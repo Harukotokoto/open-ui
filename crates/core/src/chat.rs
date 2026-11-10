@@ -18,7 +18,14 @@ pub struct ChatRequest {
     pub profile_id: String,
     /// 思考(reasoning)は含めない
     pub messages: Vec<WireMessage>,
+    /// 画面が描ける書式(独自コンポーネントなど)をAIに伝える説明。システムプロンプトの後ろに足す。
+    /// 画面の部品と同じ場所で管理するため、フロントが渡す。無ければ足さない
+    #[serde(default)]
+    pub format_guide: Option<String>,
 }
+
+/// 書式の説明の最大文字数。
+pub const MAX_FORMAT_GUIDE_CHARS: usize = 20_000;
 
 impl ChatRequest {
     pub fn validate(&self) -> Result<(), AppError> {
@@ -30,6 +37,13 @@ impl ChatRequest {
         }
         if self.messages.is_empty() {
             return Err(AppError::invalid_input("送信するメッセージがありません"));
+        }
+        if self
+            .format_guide
+            .as_deref()
+            .is_some_and(|guide| guide.chars().count() > MAX_FORMAT_GUIDE_CHARS)
+        {
+            return Err(AppError::invalid_input("書式の説明が長すぎます"));
         }
         Ok(())
     }
@@ -48,6 +62,7 @@ mod tests {
                 role: Role::User,
                 content: "hi".into(),
             }],
+            format_guide: None,
         }
     }
 
@@ -82,5 +97,22 @@ mod tests {
         let parsed: ChatRequest = serde_json::from_str(json).unwrap();
         assert_eq!(parsed.request_id, "r1");
         assert_eq!(parsed.messages[0].role, Role::User);
+        // 省略できる
+        assert_eq!(parsed.format_guide, None);
+    }
+
+    #[test]
+    fn an_overlong_format_guide_is_rejected() {
+        let too_long = ChatRequest {
+            format_guide: Some("あ".repeat(MAX_FORMAT_GUIDE_CHARS + 1)),
+            ..request()
+        };
+        let at_the_limit = ChatRequest {
+            format_guide: Some("あ".repeat(MAX_FORMAT_GUIDE_CHARS)),
+            ..request()
+        };
+
+        assert!(too_long.validate().is_err());
+        assert!(at_the_limit.validate().is_ok());
     }
 }

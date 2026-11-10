@@ -46,6 +46,16 @@ pub enum ChatEvent {
     Delta { text: String },
     /// 思考の増分
     Reasoning { text: String },
+    /// 出力の統計。出力があったときだけ、`Done` の直前に1回届く(中断・JSON応答では届かない)
+    #[serde(rename_all = "camelCase")]
+    Stats {
+        /// 出力したトークン数(思考を含む)
+        tokens: u32,
+        /// 最初の出力から最後の出力までの時間(ミリ秒)。待ち時間(プロンプトの処理)は含まない
+        elapsed_ms: u32,
+        /// サーバーが数を返さず、受け取ったチャンクの数で代用したとき `true`
+        estimated: bool,
+    },
     /// 完了(中断された場合も含む)
     Done,
     /// 失敗。メッセージは日本語
@@ -70,6 +80,20 @@ mod tests {
         })
         .unwrap();
         assert_eq!(error, r#"{"type":"error","message":"x"}"#);
+    }
+
+    #[test]
+    fn stats_use_camel_case_fields() {
+        let stats = serde_json::to_string(&ChatEvent::Stats {
+            tokens: 42,
+            elapsed_ms: 1500,
+            estimated: false,
+        })
+        .unwrap();
+        assert_eq!(
+            stats,
+            r#"{"type":"stats","tokens":42,"elapsedMs":1500,"estimated":false}"#
+        );
     }
 
     #[test]
