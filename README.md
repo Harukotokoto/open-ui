@@ -33,6 +33,13 @@ open-uiは、自分のPCやネットワーク上で動くAIサーバーを、使
 > [!NOTE]
 > 開発中のプロジェクトです。基本のチャット、履歴、接続プロファイル、Markdown表示、自動更新までが動きます。添付ファイル、Anthropic API対応、メモリ・MCPなどは[ロードマップ](#ロードマップ)のとおり未実装です。
 
+### スクリーンショット
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/sample_dark.png">
+  <img src="public/sample_light.png" alt="open-uiのチャット画面(ライト・ダークのテーマに対応)">
+</picture>
+
 ## 機能
 
 ### チャット

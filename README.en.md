@@ -33,6 +33,13 @@ open-ui is a desktop app that gives you a comfortable chat interface for AI serv
 > [!NOTE]
 > This project is under development. Basic chat, history, connection profiles, Markdown rendering, and auto-update work. Attachments, Anthropic API support, memory, and MCP are not implemented yet (see the [Roadmap](#roadmap)).
 
+### Screenshot
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/sample_dark.png">
+  <img src="public/sample_light.png" alt="The open-ui chat screen (light and dark themes supported)">
+</picture>
+
 ## Features
 
 ### Chat

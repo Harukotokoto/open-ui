@@ -33,6 +33,13 @@ open-ui는 내 PC나 네트워크에서 실행되는 AI 서버를 편리한 채�
 > [!NOTE]
 > 개발 중인 프로젝트입니다. 기본 채팅, 대화 기록, 연결 프로필, Markdown 표시, 자동 업데이트까지 동작합니다. 첨부 파일, Anthropic API 지원, 메모리·MCP 등은 [로드맵](#로드맵)에 있는 대로 아직 구현되지 않았습니다.
 
+### 스크린샷
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/sample_dark.png">
+  <img src="public/sample_light.png" alt="open-ui 채팅 화면 (라이트·다크 테마 지원)">
+</picture>
+
 ## 기능
 
 ### 채팅
