@@ -6,6 +6,7 @@ import {
   InputGroupAddon,
   InputGroupTextarea,
 } from "@/components/ui/input-group";
+import { cn } from "@/lib/utils";
 
 interface ComposerProps {
   /** 送信する。空白だけのときは呼ばれない。 */
@@ -28,9 +29,12 @@ interface ComposerProps {
   hint?: React.ReactNode;
 }
 
-/** フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる)。 */
+/**
+ * フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる)。
+ * 送信ボタンが無効(空のとき)でも、入力欄全体を薄く(半透明に)しない。
+ */
 const GROUP_CLASS =
-  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0";
+  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-disabled:bg-transparent has-disabled:opacity-100 dark:has-disabled:bg-input/30";
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行。返答中は送信ボタンが停止ボタンになる。 */
 export function Composer({
@@ -77,7 +81,7 @@ export function Composer({
       aria-label="メッセージ"
       rows={1}
       autoFocus={autoFocus}
-      className={className}
+      className={cn("placeholder:text-foreground/70", className)}
     />
   );
   const send = <SendButton busy={busy} canSend={canSend} onStop={onStop} />;
