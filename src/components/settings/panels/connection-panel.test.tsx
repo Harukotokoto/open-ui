@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ConnectionDialog } from "@/components/settings/connection-dialog";
+import { ConnectionPanel } from "@/components/settings/panels/connection-panel";
 import {
   getApiKeyStatus,
   setApiKey,
@@ -35,19 +35,18 @@ vi.mock("@/services/profiles", () => ({
   testConnection: vi.fn(),
 }));
 
-function renderDialog(onOpenChange = vi.fn()) {
+function renderPanel() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
   render(
     <QueryClientProvider client={queryClient}>
-      <ConnectionDialog open onOpenChange={onOpenChange} />
+      <ConnectionPanel />
     </QueryClientProvider>,
   );
-  return onOpenChange;
 }
 
-describe("ConnectionDialog", () => {
+describe("ConnectionPanel", () => {
   beforeEach(() => {
     vi.mocked(getApiKeyStatus).mockResolvedValue("unset");
     vi.mocked(updateProfile).mockResolvedValue(book);
@@ -57,7 +56,7 @@ describe("ConnectionDialog", () => {
 
   it("保存済みの内容を表示し、キーの値は表示しない", async () => {
     vi.mocked(getApiKeyStatus).mockResolvedValue("saved");
-    renderDialog();
+    renderPanel();
 
     expect(await screen.findByLabelText("名前")).toHaveValue("LM Studio");
     expect(screen.getByLabelText("ベースURL")).toHaveValue(
@@ -68,7 +67,7 @@ describe("ConnectionDialog", () => {
 
   it("接続を確かめると、見つかったモデルの件数を出す", async () => {
     vi.mocked(testConnection).mockResolvedValue(["qwen3", "gemma3"]);
-    renderDialog();
+    renderPanel();
     const user = userEvent.setup();
 
     await user.click(
@@ -88,7 +87,7 @@ describe("ConnectionDialog", () => {
     vi.mocked(testConnection).mockRejectedValue(
       new Error("サーバーに接続できませんでした"),
     );
-    renderDialog();
+    renderPanel();
     const user = userEvent.setup();
 
     await user.click(
@@ -100,15 +99,15 @@ describe("ConnectionDialog", () => {
     ).toBeInTheDocument();
   });
 
-  it("保存すると、プロファイルと入力したキーを送り、ダイアログを閉じる", async () => {
-    const onOpenChange = renderDialog();
+  it("保存すると、プロファイルと入力したキーを送り、保存できたことを知らせる", async () => {
+    renderPanel();
     const user = userEvent.setup();
 
     await user.type(await screen.findByLabelText("APIキー"), "sk-secret");
     await user.type(screen.getByLabelText("モデル名"), "qwen3");
     await user.click(screen.getByRole("button", { name: "保存" }));
 
-    await vi.waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(await screen.findByText("保存しました")).toBeInTheDocument();
     expect(updateProfile).toHaveBeenCalledWith(
       expect.objectContaining({ id: "default", selectedModel: "qwen3" }),
     );

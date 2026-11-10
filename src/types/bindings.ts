@@ -15,6 +15,10 @@ export const commands = {
 	chatStart: (request: ChatRequest, onEvent: Channel<ChatEvent>) => typedError<null, AppError>(__TAURI_INVOKE("chat_start", { request, onEvent })),
 	/**  実行中の返答の生成を中断する。完了済み・存在しないIDでも何も起きない。 */
 	chatCancel: (requestId: string) => __TAURI_INVOKE<void>("chat_cancel", { requestId }),
+	/**  保存されている生成の設定。 */
+	generationSettingsGet: () => typedError<GenerationSettings, AppError>(__TAURI_INVOKE("generation_settings_get")),
+	/**  生成の設定を検証して保存する。保存後の内容を返す。 */
+	generationSettingsUpdate: (generation: GenerationSettings) => typedError<GenerationSettings, AppError>(__TAURI_INVOKE("generation_settings_update", { generation })),
 	/**  履歴の一覧(更新が新しい順)。メッセージは含まない。 */
 	historyList: () => typedError<HistoryListing, AppError>(__TAURI_INVOKE("history_list")),
 	/**  会話1件(メッセージを含む)。 */
@@ -151,6 +155,16 @@ export type ConversationSummary = {
 	updatedAt: number,
 };
 
+/**  生成の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。 */
+export type GenerationSettings = {
+	/**  空なら付けない */
+	systemPrompt?: string,
+	/**  `None` ならサーバーの既定 */
+	temperature?: number | null,
+	/**  `None` ならサーバーの既定 */
+	maxTokens?: number | null,
+};
+
 /**  履歴の一覧。読めなかったファイルは一覧に入れず、件数だけ知らせる(ファイルには触らない)。 */
 export type HistoryListing = {
 	/**  更新が新しい順 */
@@ -194,10 +208,15 @@ export type SaveConversation = {
 	messages: unknown[],
 };
 
+/**  テーマの選択。`system` はOSの設定に従う。 */
+export type Theme = "system" | "light" | "dark";
+
 /**  画面の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。 */
 export type UiSettings = {
 	/**  サイドバーを開いているか */
 	sidebarOpen?: boolean,
+	/**  テーマの選択 */
+	theme?: Theme,
 };
 
 /**

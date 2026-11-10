@@ -31,6 +31,13 @@ pub struct WireMessage {
     pub content: String,
 }
 
+/// リクエストに付ける生成のパラメーター。None はサーバーの既定に任せる。
+#[derive(Debug, Clone, Copy, Default, PartialEq)]
+pub struct GenerationParams {
+    pub temperature: Option<f32>,
+    pub max_tokens: Option<u32>,
+}
+
 /// フロントへ流すチャットのイベント。1リクエストにつき最後に `Done` か `Error` が1回届く。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Type)]
 #[serde(tag = "type", rename_all = "camelCase")]

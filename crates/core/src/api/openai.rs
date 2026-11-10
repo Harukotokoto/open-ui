@@ -9,7 +9,7 @@ use tokio_util::sync::CancellationToken;
 use super::connection::Connection;
 use super::http::{describe_error, status_error};
 use super::sse::SseLines;
-use super::types::{ChatEvent, Emit, WireMessage};
+use super::types::{ChatEvent, Emit, GenerationParams, WireMessage};
 use crate::error::AppError;
 
 /// 返答を生成して、イベントを `emit` に流す。成功時と中断時は最後に `Done` を流す。
@@ -18,6 +18,7 @@ pub async fn chat(
     client: &reqwest::Client,
     connection: &Connection,
     messages: &[WireMessage],
+    params: GenerationParams,
     cancel: &CancellationToken,
     emit: Emit<'_>,
 ) -> Result<(), AppError> {
@@ -25,7 +26,7 @@ pub async fn chat(
         client.post(connection.endpoint("chat/completions")),
         connection,
     )
-    .json(&chat_body(&connection.model, messages));
+    .json(&chat_body(&connection.model, messages, params));
 
     // 応答の先頭が届くまでにも時間がかかる(プロンプト処理など)ため、ここも中断できるようにする
     let Some(sent) = cancel.run_until_cancelled(request.send()).await else {
@@ -79,7 +80,7 @@ fn authorized(request: RequestBuilder, connection: &Connection) -> RequestBuilde
 }
 
 /// リクエスト本文。思考(reasoning)は含めない。
-fn chat_body(model: &str, messages: &[WireMessage]) -> Value {
+fn chat_body(model: &str, messages: &[WireMessage], params: GenerationParams) -> Value {
     let mut body = json!({
         "messages": messages,
         "stream": true,
@@ -87,6 +88,12 @@ fn chat_body(model: &str, messages: &[WireMessage]) -> Value {
     let model = model.trim();
     if !model.is_empty() {
         body["model"] = json!(model);
+    }
+    if let Some(temperature) = params.temperature {
+        body["temperature"] = json!(temperature);
+    }
+    if let Some(max_tokens) = params.max_tokens {
+        body["max_tokens"] = json!(max_tokens);
     }
     body
 }
@@ -249,9 +256,14 @@ mod tests {
     ) -> (Vec<ChatEvent>, Result<(), AppError>) {
         let client = crate::api::http::build_client().unwrap();
         let mut events = Vec::new();
-        let result = chat(&client, connection, &user("hi"), cancel, &mut |e| {
-            events.push(e)
-        })
+        let result = chat(
+            &client,
+            connection,
+            &user("hi"),
+            GenerationParams::default(),
+            cancel,
+            &mut |e| events.push(e),
+        )
         .await;
         (events, result)
     }
@@ -266,14 +278,33 @@ mod tests {
 
     #[test]
     fn chat_body_omits_the_model_when_blank_and_never_has_reasoning() {
-        let body = chat_body("  ", &user("hi"));
+        let body = chat_body("  ", &user("hi"), GenerationParams::default());
         assert_eq!(body["stream"], true);
         assert!(body.get("model").is_none());
         assert_eq!(
             body["messages"],
             json!([{ "role": "user", "content": "hi" }])
         );
-        assert_eq!(chat_body(" m ", &user("hi"))["model"], "m");
+        assert_eq!(
+            chat_body(" m ", &user("hi"), GenerationParams::default())["model"],
+            "m"
+        );
+        // 指定が無ければ、サーバーの既定に任せる
+        assert!(body.get("temperature").is_none());
+        assert!(body.get("max_tokens").is_none());
+    }
+
+    #[test]
+    fn chat_body_carries_the_generation_params_when_set() {
+        let params = GenerationParams {
+            temperature: Some(0.5),
+            max_tokens: Some(256),
+        };
+
+        let body = chat_body("m", &user("hi"), params);
+
+        assert_eq!(body["temperature"], 0.5);
+        assert_eq!(body["max_tokens"], 256);
     }
 
     #[test]

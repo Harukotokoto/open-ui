@@ -2,6 +2,7 @@
 
 pub mod app;
 pub mod chat;
+pub mod generation_settings;
 pub mod history;
 pub mod profiles;
 pub mod secrets;

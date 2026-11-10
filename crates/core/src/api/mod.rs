@@ -15,7 +15,7 @@ mod types;
 
 pub use active::{ActiveGuard, ActiveRequests};
 pub use connection::Connection;
-pub use types::{ChatEvent, Emit, ProviderKind, Role, WireMessage};
+pub use types::{ChatEvent, Emit, GenerationParams, ProviderKind, Role, WireMessage};
 
 use std::time::Duration;
 
@@ -45,12 +45,21 @@ impl ApiClient {
         request_id: &str,
         connection: &Connection,
         messages: &[WireMessage],
+        params: GenerationParams,
         mut emit: impl FnMut(ChatEvent) + Send,
     ) {
         let guard = self.active.register(request_id);
         let result = match connection.kind {
             ProviderKind::OpenAiCompatible => {
-                openai::chat(&self.http, connection, messages, guard.token(), &mut emit).await
+                openai::chat(
+                    &self.http,
+                    connection,
+                    messages,
+                    params,
+                    guard.token(),
+                    &mut emit,
+                )
+                .await
             }
         };
         if let Err(error) = result {
@@ -76,9 +85,14 @@ impl ApiClient {
             }
         };
         let request = match connection.kind {
-            ProviderKind::OpenAiCompatible => {
-                openai::chat(&self.http, connection, messages, &cancel, &mut collect)
-            }
+            ProviderKind::OpenAiCompatible => openai::chat(
+                &self.http,
+                connection,
+                messages,
+                GenerationParams::default(),
+                &cancel,
+                &mut collect,
+            ),
         };
         match tokio::time::timeout(timeout, request).await {
             Ok(result) => result?,
@@ -131,9 +145,13 @@ mod tests {
         let api = ApiClient::new().unwrap();
         let mut events = Vec::new();
 
-        api.chat("r1", &connection("http://127.0.0.1:1/v1"), &user(), |e| {
-            events.push(e)
-        })
+        api.chat(
+            "r1",
+            &connection("http://127.0.0.1:1/v1"),
+            &user(),
+            GenerationParams::default(),
+            |e| events.push(e),
+        )
         .await;
 
         assert_eq!(events.len(), 1);
@@ -205,8 +223,14 @@ mod tests {
         let api = ApiClient::new().unwrap();
         let mut events = Vec::new();
 
-        api.chat("r1", &connection(&url), &user(), |e| events.push(e))
-            .await;
+        api.chat(
+            "r1",
+            &connection(&url),
+            &user(),
+            GenerationParams::default(),
+            |e| events.push(e),
+        )
+        .await;
 
         assert_eq!(
             events,

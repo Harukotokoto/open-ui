@@ -21,6 +21,8 @@ pub fn builder() -> Builder<tauri::Wry> {
             commands::app::app_info,
             commands::chat::chat_start,
             commands::chat::chat_cancel,
+            commands::generation_settings::generation_settings_get,
+            commands::generation_settings::generation_settings_update,
             commands::history::history_list,
             commands::history::history_load,
             commands::history::history_save,

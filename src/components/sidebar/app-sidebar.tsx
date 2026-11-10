@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { DeleteDialog } from "@/components/sidebar/delete-dialog";
 import { HistoryList } from "@/components/sidebar/history-list";
@@ -6,6 +6,7 @@ import { RenameDialog } from "@/components/sidebar/rename-dialog";
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarInput,
   SidebarMenu,
@@ -17,14 +18,16 @@ import { useHistoryList } from "@/hooks/use-history";
 import { groupByDate } from "@/lib/history-groups";
 import { filterByTitle } from "@/lib/history-search";
 import { useConversationStore } from "@/stores/conversation-store";
+import { useSettingsDialogStore } from "@/stores/settings-dialog-store";
 import type { ConversationSummary } from "@/types/bindings";
 
-/** 左のサイドバー。新規チャット・タイトル検索・日付ごとの履歴を出す。 */
+/** 左のサイドバー。新規チャット・タイトル検索・日付ごとの履歴・設定ボタンを出す。 */
 export function AppSidebar() {
   const history = useHistoryList();
   const activeId = useConversationStore((state) => state.activeId);
   const open = useConversationStore((state) => state.open);
   const startNew = useConversationStore((state) => state.startNew);
+  const showSettings = useSettingsDialogStore((state) => state.show);
   const { isMobile, setOpenMobile } = useSidebar();
 
   const [query, setQuery] = useState("");
@@ -63,7 +66,6 @@ export function AppSidebar() {
             placeholder="タイトルで検索"
             aria-label="履歴をタイトルで検索"
             autoComplete="off"
-            className="rounded-sm"
           />
         </SidebarHeader>
         <SidebarContent className="m-1">
@@ -83,6 +85,21 @@ export function AppSidebar() {
             onDelete={setDeleting}
           />
         </SidebarContent>
+        <SidebarFooter className="m-1">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => {
+                  showSettings();
+                  afterNavigate();
+                }}
+              >
+                <SettingsIcon />
+                <span>設定</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
       </Sidebar>
 
       {/* 狭い画面ではサイドバーが閉じると中身が消えるので、ダイアログは外に置く */}
