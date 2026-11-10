@@ -2,6 +2,13 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Streamdown(Markdown表示)の部品が使うTailwindのクラスを拾う。node_modules はスキャンされないため */
+@source "../../node_modules/streamdown/dist/*.js";
+@source "../../node_modules/@streamdown/code/dist/*.js";
+@source "../../node_modules/@streamdown/mermaid/dist/*.js";
+@source "../../node_modules/@streamdown/math/dist/*.js";
+@source "../../node_modules/@streamdown/cjk/dist/*.js";
+
 @custom-variant dark (&:is(.dark *));
 /* フォーカス時に枠(リング・枠線の色の変化)を出さない。`focus-visible:` の指定を無効にする */
 @custom-variant focus-visible (&:not(*));

@@ -1,7 +1,10 @@
 import type { UIMessage } from "ai";
 import { ReasoningTrace } from "@/components/chat/reasoning-trace";
+import { ReplyStatsLine } from "@/components/chat/reply-stats-line";
+import { ReplyText } from "@/components/chat/reply-text";
 import { Message, MessageContent } from "@/components/ui/message";
 import { Trace } from "@/components/ui/trace";
+import { getReplyStats } from "@/lib/reply-stats";
 
 interface AssistantMessageProps {
   message: UIMessage;
@@ -14,6 +17,7 @@ export function AssistantMessage({
   message,
   streaming,
 }: AssistantMessageProps) {
+  const stats = getReplyStats(message);
   return (
     <Message>
       <MessageContent className="gap-3 text-base leading-7">
@@ -33,13 +37,18 @@ export function AssistantMessage({
           }
           if (part.type === "text") {
             return (
-              <p key={key} className="whitespace-pre-wrap">
-                {part.text}
-              </p>
+              <ReplyText
+                key={key}
+                text={part.text}
+                // 中断された本文も`streaming`のまま残るので、生成中の返答に限る
+                streaming={streaming && part.state === "streaming"}
+              />
             );
           }
           return null;
         })}
+        {/* 出力が終わってから、下に小さく添える */}
+        {!streaming && stats && <ReplyStatsLine stats={stats} />}
       </MessageContent>
     </Message>
   );
