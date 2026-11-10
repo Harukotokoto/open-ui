@@ -1,10 +1,20 @@
-import { PlugIcon, SettingsIcon, SlidersHorizontalIcon } from "lucide-react";
+import {
+  InfoIcon,
+  PlugIcon,
+  SettingsIcon,
+  SlidersHorizontalIcon,
+} from "lucide-react";
 import type { ComponentType } from "react";
+import { AboutPanel } from "@/components/settings/panels/about-panel";
 import { ConnectionPanel } from "@/components/settings/panels/connection-panel";
 import { GeneralPanel } from "@/components/settings/panels/general-panel";
 import { GenerationPanel } from "@/components/settings/panels/generation-panel";
 
-export type SettingsCategoryId = "general" | "connection" | "generation";
+export type SettingsCategoryId =
+  | "general"
+  | "connection"
+  | "generation"
+  | "about";
 
 export interface SettingsCategory {
   id: SettingsCategoryId;
@@ -51,5 +61,12 @@ export const settingsCategories: readonly SettingsCategory[] = [
     icon: SlidersHorizontalIcon,
     keywords: ["システムプロンプト", "temperature", "トークン", "返答"],
     Panel: GenerationPanel,
+  },
+  {
+    id: "about",
+    label: "バージョン情報",
+    icon: InfoIcon,
+    keywords: ["バージョン", "更新", "アップデート", "今すぐ確認", "最新"],
+    Panel: AboutPanel,
   },
 ];
