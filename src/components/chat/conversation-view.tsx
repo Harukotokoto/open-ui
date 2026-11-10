@@ -3,7 +3,6 @@ import { MessageList } from "@/components/chat/message-list";
 import { Composer } from "@/components/composer/composer";
 import { ModelSelector } from "@/components/composer/model-selector";
 import { Welcome } from "@/components/welcome/welcome";
-import { useAutosaveConversation } from "@/hooks/use-autosave-conversation";
 import { useChatSession } from "@/hooks/use-chat-session";
 import { useActiveProfile } from "@/hooks/use-profiles";
 import type { AttachmentInfo } from "@/types/bindings";
@@ -19,7 +18,8 @@ interface ConversationViewProps {
 
 /**
  * 1つの会話の表示。会話が空ならWelcome、あれば会話の列と下の入力欄を出す。
- * 状態(メッセージ・生成中か)はこの中が持つので、会話を切り替えるときは `key` で作り直す。
+ * 会話を切り替えるときは `key` で作り直す。会話の状態(メッセージ・生成中か)は `chatSessions` が持つので、
+ * 作り直しても生成は続き、戻ってくると続きから見える。
  */
 export function ConversationView({
   id,
@@ -27,8 +27,7 @@ export function ConversationView({
   onOpenSettings,
 }: ConversationViewProps) {
   const { profile } = useActiveProfile();
-  const session = useChatSession(profile?.id, { id, initialMessages });
-  useAutosaveConversation(id, session.messages, session.status, profile?.id);
+  const session = useChatSession({ id, initialMessages });
 
   const composerProps = {
     conversationId: id,

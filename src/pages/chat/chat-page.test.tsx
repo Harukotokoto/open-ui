@@ -1,16 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ChatPage } from "@/pages/chat/chat-page";
-import { startChat } from "@/services/chat/ipc";
+import { cancelChat, startChat } from "@/services/chat/ipc";
+import { chatSessions } from "@/services/chat/sessions";
 import {
   generateConversationTitle,
   loadConversation,
   saveConversation,
 } from "@/services/history";
 import { useConversationStore } from "@/stores/conversation-store";
+import type { ChatEvent } from "@/types/bindings";
 
 vi.mock("@/services/chat/ipc", () => ({
   startChat: vi.fn(),
@@ -64,7 +66,10 @@ async function send(text: string) {
 }
 
 describe("ChatPage", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
+    // 会話の置き場はアプリ全体で1つなので、テストごとに空にする
+    await chatSessions.disposeAll();
+    vi.mocked(cancelChat).mockClear();
     vi.mocked(startChat).mockReset();
     vi.mocked(saveConversation).mockClear();
     vi.mocked(generateConversationTitle).mockClear();
@@ -102,7 +107,7 @@ describe("ChatPage", () => {
       await screen.findByText("こんにちは、元気ですか?"),
     ).toBeInTheDocument();
     expect(screen.getByText("こんにちは")).toBeInTheDocument();
-    expect(screen.getByText("思考しました")).toBeInTheDocument();
+    expect(screen.getByText("1秒思考しました")).toBeInTheDocument();
     expect(startChat).toHaveBeenCalledWith(
       expect.objectContaining({
         profileId: "default",
@@ -168,6 +173,50 @@ describe("ChatPage", () => {
     expect(saved[1].parts).toContainEqual(
       expect.objectContaining({ type: "text", text: "やあ", state: "done" }),
     );
+  });
+
+  it("生成中に別の会話へ切り替えても、生成は途切れず、戻ると続きが見える", async () => {
+    let emit: ((event: ChatEvent) => void) | undefined;
+    let finish: (() => void) | undefined;
+    vi.mocked(startChat).mockImplementation(
+      (_request, onEvent) =>
+        new Promise<void>((resolve) => {
+          emit = onEvent;
+          finish = resolve;
+        }),
+    );
+    renderPage();
+    await send("長い質問");
+    await waitFor(() => expect(emit).toBeDefined());
+    act(() => emit?.({ type: "delta", text: "考え中、" }));
+
+    // 別の新しい会話に切り替える
+    act(() =>
+      useConversationStore.setState({ activeId: "chat-2", existing: false }),
+    );
+    expect(
+      await screen.findByRole("heading", { name: "今日は何をしましょうか?" }),
+    ).toBeInTheDocument();
+    expect(cancelChat).not.toHaveBeenCalled();
+
+    // 画面に無くても、生成は進み、終わったら保存される
+    act(() => {
+      emit?.({ type: "delta", text: "答えです" });
+      emit?.({ type: "done" });
+      finish?.();
+    });
+    await waitFor(() => {
+      const last = vi.mocked(saveConversation).mock.calls.at(-1);
+      expect(last?.[0]).toBe("chat-1");
+      expect(last?.[1]).toHaveLength(2);
+    });
+
+    // 戻ると、ファイルを読み直さず、生成した返答が見える
+    act(() =>
+      useConversationStore.setState({ activeId: "chat-1", existing: true }),
+    );
+    expect(await screen.findByText("考え中、答えです")).toBeInTheDocument();
+    expect(loadConversation).not.toHaveBeenCalled();
   });
 
   it("開いただけの会話は保存しない", async () => {

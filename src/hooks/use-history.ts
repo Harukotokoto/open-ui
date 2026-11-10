@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { fromStoredMessages } from "@/lib/stored-messages";
+import { chatSessions } from "@/services/chat/sessions";
 import {
   deleteConversation,
   generateConversationTitle,
@@ -81,11 +82,16 @@ export function useRenameConversation() {
   });
 }
 
-/** 会話を削除する。 */
+/**
+ * 会話を削除する。生成中なら先に止める(止めないと、生成が終わったときの保存でファイルが戻ってしまう)。
+ */
 export function useDeleteConversation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteConversation(id),
+    mutationFn: async (id: string) => {
+      await chatSessions.dispose(id);
+      await deleteConversation(id);
+    },
     onSettled: () => queryClient.invalidateQueries({ queryKey: historyKey }),
   });
 }
