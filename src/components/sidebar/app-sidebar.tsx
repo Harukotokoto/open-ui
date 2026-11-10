@@ -42,7 +42,7 @@ export function AppSidebar() {
   return (
     <>
       <Sidebar>
-        <SidebarHeader>
+        <SidebarHeader className="m-1">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
@@ -63,9 +63,10 @@ export function AppSidebar() {
             placeholder="タイトルで検索"
             aria-label="履歴をタイトルで検索"
             autoComplete="off"
+            className="rounded-sm"
           />
         </SidebarHeader>
-        <SidebarContent>
+        <SidebarContent className="m-1">
           <HistoryList
             groups={groups}
             activeId={activeId}
