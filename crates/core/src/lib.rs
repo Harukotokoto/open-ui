@@ -10,3 +10,4 @@ pub mod error;
 pub mod fs;
 pub mod profiles;
 pub mod secrets;
+pub mod settings;

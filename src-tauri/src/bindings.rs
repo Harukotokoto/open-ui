@@ -27,6 +27,8 @@ pub fn builder() -> Builder<tauri::Wry> {
             commands::secrets::secret_set,
             commands::secrets::secret_clear,
             commands::secrets::secret_status,
+            commands::ui_settings::ui_settings_get,
+            commands::ui_settings::ui_settings_update,
         ])
 }
 

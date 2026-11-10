@@ -31,6 +31,10 @@ export const commands = {
 	secretClear: (profileId: string) => typedError<KeyStatus, AppError>(__TAURI_INVOKE("secret_clear", { profileId })),
 	/**  プロファイルのAPIキーの状態(未設定・保存済み・未保存)。 */
 	secretStatus: (profileId: string) => typedError<KeyStatus, AppError>(__TAURI_INVOKE("secret_status", { profileId })),
+	/**  保存されている画面の設定。 */
+	uiSettingsGet: () => typedError<UiSettings, AppError>(__TAURI_INVOKE("ui_settings_get")),
+	/**  画面の設定を保存する。保存後の内容を返す。 */
+	uiSettingsUpdate: (ui: UiSettings) => typedError<UiSettings, AppError>(__TAURI_INVOKE("ui_settings_update", { ui })),
 };
 
 /* Types */
@@ -135,6 +139,12 @@ export type ProviderKind =
 
 /**  会話の発言者。 */
 export type Role = "system" | "user" | "assistant";
+
+/**  画面の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。 */
+export type UiSettings = {
+	/**  サイドバーを開いているか */
+	sidebarOpen?: boolean,
+};
 
 /**
  *  サーバーへ送る1メッセージ。思考(reasoning)は含めない。
