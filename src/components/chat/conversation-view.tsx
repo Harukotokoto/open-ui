@@ -40,10 +40,7 @@ export function ConversationView({
   if (session.messages.length === 0) {
     return (
       <Welcome>
-        <Composer
-          {...composerProps}
-          actions={profile ? <ModelSelector profile={profile} /> : null}
-        />
+        <Composer {...composerProps} actions={<ModelSelector />} />
       </Welcome>
     );
   }
@@ -65,11 +62,7 @@ export function ConversationView({
           {...composerProps}
           variant="compact"
           hint={AI_NOTICE}
-          actions={
-            profile ? (
-              <ModelSelector profile={profile} className="h-6 px-1.5 text-xs" />
-            ) : null
-          }
+          actions={<ModelSelector className="h-6 px-1.5 text-xs" />}
         />
       </div>
     </>
