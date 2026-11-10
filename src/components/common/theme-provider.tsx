@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from "react";
+import { useLayoutEffect, useSyncExternalStore } from "react";
 import { resolveTheme } from "@/lib/theme";
 import { useThemeStore } from "@/stores/theme-store";
 
@@ -23,7 +23,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   );
   const resolved = resolveTheme(preference, systemPrefersDark);
 
-  useEffect(() => {
+  // 初回描画の前に反映する(`useEffect` だと、ダークの OS で一瞬ライトで表示される)
+  useLayoutEffect(() => {
     const root = document.documentElement;
     root.classList.toggle("dark", resolved === "dark");
     root.style.colorScheme = resolved;

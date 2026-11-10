@@ -5,11 +5,6 @@ mod commands;
 pub fn run() {
     let builder = bindings::builder();
 
-    #[cfg(debug_assertions)]
-    if let Err(error) = bindings::export(&builder) {
-        eprintln!("TypeScript の型を書き出せませんでした: {error}");
-    }
-
     tauri::Builder::default()
         .invoke_handler(builder.invoke_handler())
         .setup(move |app| {

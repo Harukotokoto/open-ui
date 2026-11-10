@@ -80,7 +80,8 @@
   --destructive: #b53333;
   --border: #e8e6dc;
   --input: #e8e6dc;
-  --ring: #d97757;
+  /* フォーカスの境界線は非テキストのコントラスト 3:1 以上(背景 #faf9f5 に対して約 4.4:1)にする */
+  --ring: #b9573a;
   --chart-1: #d97757;
   --chart-2: #c6613f;
   --chart-3: #9c8f7a;
@@ -94,7 +95,7 @@
   --sidebar-accent: #ebe8dd;
   --sidebar-accent-foreground: #141413;
   --sidebar-border: #e8e6dc;
-  --sidebar-ring: #d97757;
+  --sidebar-ring: #b9573a;
 }
 
 .dark {
