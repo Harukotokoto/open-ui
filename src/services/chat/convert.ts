@@ -1,4 +1,5 @@
 import type { UIMessage, UIMessageChunk } from "ai";
+import { getMessageText } from "@/lib/messages";
 import type { ChatEvent, WireMessage } from "@/types/bindings";
 
 /**
@@ -7,9 +8,7 @@ import type { ChatEvent, WireMessage } from "@/types/bindings";
  */
 export function toWireMessages(messages: UIMessage[]): WireMessage[] {
   return messages.flatMap((message) => {
-    const content = message.parts
-      .map((part) => (part.type === "text" ? part.text : ""))
-      .join("");
+    const content = getMessageText(message);
     return content === "" ? [] : [{ role: message.role, content }];
   });
 }

@@ -1,26 +1,61 @@
+import { SettingsIcon } from "lucide-react";
+import { useState } from "react";
+import { MessageList } from "@/components/chat/message-list";
+import { Composer } from "@/components/composer/composer";
+import { ConnectionDialog } from "@/components/settings/connection-dialog";
 import { Button } from "@/components/ui/button";
-import { useAppInfo } from "@/hooks/use-app-info";
+import { Welcome } from "@/components/welcome/welcome";
+import { useChatSession } from "@/hooks/use-chat-session";
+import { useActiveProfile } from "@/hooks/use-profiles";
 
-/** チャット画面。土台(⓪)ではプレースホルダー。チャット本体は①で作る。 */
+/** チャット画面。会話が空ならWelcome、あれば会話の列と下の入力欄を出す。 */
 export function ChatPage() {
-  const { data, isError, refetch } = useAppInfo();
+  const { profile } = useActiveProfile();
+  const session = useChatSession(profile?.id);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const composer = (
+    <Composer
+      onSend={(text) => void session.send(text)}
+      onStop={() => void session.stop()}
+      busy={session.isBusy}
+      sendDisabled={profile === undefined}
+      autoFocus
+    />
+  );
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6 text-center">
-      <h1 className="font-serif text-3xl">open-ui</h1>
-      <p className="text-muted-foreground">
-        OpenAI互換サーバー向けのUIクライアント
-      </p>
-      {data && (
-        <p className="text-sm text-muted-foreground">
-          {data.name} v{data.version}
-        </p>
-      )}
-      {isError && (
-        <Button variant="outline" onClick={() => refetch()}>
-          バージョン情報を再取得
+    <main className="flex h-svh min-h-0 flex-col">
+      <header className="flex justify-end px-3 py-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => setSettingsOpen(true)}
+        >
+          <SettingsIcon />
+          {profile?.name ?? "接続設定"}
         </Button>
+      </header>
+
+      {session.messages.length === 0 ? (
+        <Welcome>{composer}</Welcome>
+      ) : (
+        <>
+          <div className="min-h-0 flex-1">
+            <MessageList
+              messages={session.messages}
+              busy={session.isBusy}
+              error={session.error}
+              onRetry={() => void session.retry()}
+              onOpenSettings={() => setSettingsOpen(true)}
+            />
+          </div>
+          <div className="mx-auto w-full max-w-3xl px-4 pb-4">{composer}</div>
+        </>
       )}
+
+      <ConnectionDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
     </main>
   );
 }
