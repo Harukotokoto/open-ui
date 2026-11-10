@@ -35,12 +35,17 @@ const CONTROLS = {
   image: false,
 } as const;
 
-/** 文字ごとに順にフェードインする。日本語は単語の区切りが無いので、文字単位にする。 */
+/**
+ * 文字ごとに、左から右へ順に浮かび上がる(`globals.css` の `sd-floatIn`)。日本語は単語の区切りが無いので、文字単位にする。
+ * 同時に届いた文字は `stagger` ミリ秒ずつずらして始めるので、先頭から滑らかな波になる。
+ */
 const ANIMATION = {
-  animation: "fadeIn",
+  animation: "floatIn",
   sep: "char",
-  duration: 180,
-  easing: "ease-out",
+  duration: 500,
+  easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+  stagger: 16,
+  maxBacklogMs: 400,
 } as const;
 
 const TRANSLATIONS = {

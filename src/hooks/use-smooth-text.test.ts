@@ -64,7 +64,7 @@ describe("useSmoothText", () => {
     expect(result.current.text).toBe("あ");
 
     rerender({ value: 'あ<callout type="warning">い' });
-    advance(REVEAL_LAG_MS * 4);
+    advance(REVEAL_LAG_MS * 8);
     expect(result.current.text).toBe('あ<callout type="warning">い');
   });
 

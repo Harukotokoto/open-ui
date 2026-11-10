@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   alignToCharBoundary,
+  revealAdvance,
   revealableLength,
-  stepVisibleLength,
 } from "./smooth-reveal";
 
 describe("revealableLength", () => {
@@ -66,27 +66,30 @@ describe("alignToCharBoundary", () => {
   });
 });
 
-describe("stepVisibleLength", () => {
+describe("revealAdvance", () => {
   it("溜まっていなければ進まない", () => {
-    expect(stepVisibleLength(10, 10, false)).toBe(10);
-    expect(stepVisibleLength(12, 10, false)).toBe(12);
+    expect(revealAdvance(0, 16, false)).toBe(0);
+    expect(revealAdvance(-2, 16, false)).toBe(0);
   });
 
-  it("少しでも溜まっていれば、最低1文字は進む", () => {
-    expect(stepVisibleLength(0, 1, false)).toBe(1);
-    expect(stepVisibleLength(0, 3, false)).toBe(1);
+  it("少ないときも、時間に比例した一定の速さで進む(端数あり)", () => {
+    const one = revealAdvance(5, 16, false);
+    const two = revealAdvance(5, 32, false);
+    expect(one).toBeGreaterThan(0);
+    expect(one).toBeLessThan(1);
+    expect(two).toBeCloseTo(one * 2);
   });
 
-  it("溜まった量に比例して速く進み、目標は超えない", () => {
-    const slow = stepVisibleLength(0, 100, false);
-    const fast = stepVisibleLength(0, 1000, false);
-    expect(fast).toBeGreaterThan(slow);
-    expect(stepVisibleLength(0, 5, true)).toBeLessThanOrEqual(5);
+  it("溜まった量が多いほど速く進み、溜まり以上には進まない", () => {
+    expect(revealAdvance(1000, 16, false)).toBeGreaterThan(
+      revealAdvance(100, 16, false),
+    );
+    expect(revealAdvance(0.2, 1000, true)).toBe(0.2);
   });
 
   it("出し切るときは、通常より速い", () => {
-    expect(stepVisibleLength(0, 400, true)).toBeGreaterThan(
-      stepVisibleLength(0, 400, false),
+    expect(revealAdvance(40, 16, true)).toBeGreaterThan(
+      revealAdvance(40, 16, false),
     );
   });
 });

@@ -4,7 +4,7 @@
  * 受け取った文字を、そのまま画面に出さない。
  * 1. 届いてから `REVEAL_LAG_MS` ほど置く(余裕)。タグや記法が完成するのを待てる。
  * 2. 書きかけのタグ(`<callout type="wa` など)は、閉じるまで出さない。
- * 3. 溜まった分を、1フレームに少しずつ出す(一度に出さない)。
+ * 3. 溜まった分を、時間に比例した一定の速さで流す(一度に出さない)。
  */
 
 /** 届いた文字を画面に出すまで置く時間(ミリ秒)。 */
@@ -52,17 +52,27 @@ export function alignToCharBoundary(text: string, length: number): number {
   return splitsPair ? length + 1 : length;
 }
 
+/** 通常時の最低速度(文字/秒)。溜まりが少なくても、この速さで一定に流す。 */
+const MIN_CPS = 45;
+/** 受信が終わって出し切るときの最低速度(文字/秒)。 */
+const FINISH_MIN_CPS = 150;
+/** 溜まった分を、この時間(秒)ほどで追いつくように速度を上げる。 */
+const CATCH_UP_SECONDS = 0.4;
+const FINISH_CATCH_UP_SECONDS = 0.2;
+
 /**
- * 1フレームぶん進めた表示の長さ。溜まった量に比例して進め(多いほど速く追いつく)、最低1文字は進める。
+ * `dtMs` ミリ秒のあいだに進める文字数(小数)。
+ * 一定の最低速度で流し、溜まりが増えたら追いつけるように速くする。フレームごとの端数は呼び出し側で持ち越す。
  * `finishing` は、受信が終わって残りを出し切るとき(少し速くする)。
  */
-export function stepVisibleLength(
-  visible: number,
-  target: number,
+export function revealAdvance(
+  backlog: number,
+  dtMs: number,
   finishing: boolean,
 ): number {
-  const backlog = target - visible;
-  if (backlog <= 0) return visible;
-  const rate = finishing ? 0.25 : 0.12;
-  return visible + Math.max(1, Math.ceil(backlog * rate));
+  if (backlog <= 0 || dtMs <= 0) return 0;
+  const minCps = finishing ? FINISH_MIN_CPS : MIN_CPS;
+  const catchUp = finishing ? FINISH_CATCH_UP_SECONDS : CATCH_UP_SECONDS;
+  const cps = Math.max(minCps, backlog / catchUp);
+  return Math.min(backlog, (cps * dtMs) / 1000);
 }

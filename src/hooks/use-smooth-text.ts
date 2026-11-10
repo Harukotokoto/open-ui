@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import {
   alignToCharBoundary,
   REVEAL_LAG_MS,
+  revealAdvance,
   revealableLength,
-  stepVisibleLength,
 } from "@/lib/smooth-reveal";
+
+/** 1フレームで進める時間の上限(ミリ秒)。 */
+const MAX_FRAME_MS = 50;
 
 interface SmoothText {
   /** いま画面に出す文字列(受け取った本文の先頭部分)。 */
@@ -25,6 +28,8 @@ export function useSmoothText(text: string, streaming: boolean): SmoothText {
   const textRef = useRef(text);
   const streamingRef = useRef(streaming);
   const visibleRef = useRef(visible);
+  // 端数を含めた表示の長さ。`visibleRef` はこれを切り捨てて文字の境界にそろえたもの
+  const exactRef = useRef(visible);
   // 届いた時刻と、そのときの長さ。`REVEAL_LAG_MS` 以上前のものまでを出してよい
   const arrivals = useRef<{ at: number; length: number }[]>([]);
   const agedLength = useRef(0);
@@ -36,6 +41,7 @@ export function useSmoothText(text: string, streaming: boolean): SmoothText {
     if (text.length < visibleRef.current) {
       // 本文が短くなった(作り直し)ときは、出しすぎた分を戻す
       visibleRef.current = text.length;
+      exactRef.current = text.length;
       setVisible(text.length);
     }
     if (text.length < agedLength.current) {
@@ -52,7 +58,12 @@ export function useSmoothText(text: string, streaming: boolean): SmoothText {
   useEffect(() => {
     if (!active) return;
     let frame = 0;
+    let last = performance.now();
     const tick = () => {
+      const now = performance.now();
+      // タブが裏に回ったあとなどで一気に進まないよう、1フレームの時間に上限を置く
+      const dt = Math.min(now - last, MAX_FRAME_MS);
+      last = now;
       const full = textRef.current;
       const finishing = !streamingRef.current;
       let target: number;
@@ -65,16 +76,20 @@ export function useSmoothText(text: string, streaming: boolean): SmoothText {
         }
         target = revealableLength(full, agedLength.current);
       }
-      const current = visibleRef.current;
-      if (current < target) {
+      // 端数は持ち越す(1フレームに1文字未満しか進まない速さでも、止まらず一定に流れる)
+      const exact = exactRef.current;
+      if (exact < target) {
+        exactRef.current = exact + revealAdvance(target - exact, dt, finishing);
         const next = alignToCharBoundary(
           full,
-          Math.min(stepVisibleLength(current, target, finishing), target),
+          Math.min(Math.floor(exactRef.current), target),
         );
         // 境界をそろえた結果が目標を超えるのは、目標が全文より手前のときだけ(次の文字は届いている)
         const length = Math.min(next, full.length);
-        visibleRef.current = length;
-        setVisible(length);
+        if (length !== visibleRef.current) {
+          visibleRef.current = length;
+          setVisible(length);
+        }
       }
       frame = requestAnimationFrame(tick);
     };

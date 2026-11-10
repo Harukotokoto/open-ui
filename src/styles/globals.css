@@ -158,3 +158,18 @@
     line-height: 1.65;
   }
 }
+
+/*
+ * ストリーミング本文の「浮かび上がる」アニメーション(Streamdown の `animated.animation: "floatIn"` が `sd-floatIn` を使う)。
+ * 文字ごとに少しずつ遅らせて始めるので、左から右へ、にじむように現れる。
+ * `to` に `filter` を書かないのは、終わったあとの文字にぼかしの描画層を残さないため。
+ */
+@keyframes sd-floatIn {
+  from {
+    opacity: 0;
+    filter: blur(3px);
+  }
+  to {
+    opacity: 1;
+  }
+}
