@@ -21,12 +21,19 @@ pub fn builder() -> Builder<tauri::Wry> {
             commands::app::app_info,
             commands::chat::chat_start,
             commands::chat::chat_cancel,
+            commands::history::history_list,
+            commands::history::history_load,
+            commands::history::history_save,
+            commands::history::history_rename,
+            commands::history::history_delete,
             commands::profiles::profiles_get,
             commands::profiles::profiles_update,
             commands::profiles::connection_test,
             commands::secrets::secret_set,
             commands::secrets::secret_clear,
             commands::secrets::secret_status,
+            commands::ui_settings::ui_settings_get,
+            commands::ui_settings::ui_settings_update,
         ])
 }
 

@@ -2,5 +2,7 @@
 
 pub mod app;
 pub mod chat;
+pub mod history;
 pub mod profiles;
 pub mod secrets;
+pub mod ui_settings;

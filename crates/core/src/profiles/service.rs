@@ -1,26 +1,25 @@
 //! プロファイルの操作(一覧・更新・キー)をまとめた入口。`commands/` はこれを呼ぶだけにする。
 
-use std::path::PathBuf;
 use std::sync::Arc;
 
 use super::book::ProfileBook;
 use super::keys::{KeyStatus, ProfileKeys};
 use super::model::{ConnectionProfile, is_valid_id};
-use super::store::SettingsStore;
 use crate::api::Connection;
 use crate::error::AppError;
 use crate::secrets::SecretStore;
+use crate::settings::SettingsStore;
 
 pub struct ProfileService {
-    store: SettingsStore,
+    store: Arc<SettingsStore>,
     keys: ProfileKeys,
 }
 
 impl ProfileService {
-    /// `data_dir` はアプリのデータディレクトリ。
-    pub fn new(data_dir: impl Into<PathBuf>, secrets: Arc<dyn SecretStore>) -> Self {
+    /// `store` は、画面の設定と共有する設定ファイル(ロックを共有するため、同じインスタンスを渡す)。
+    pub fn new(store: Arc<SettingsStore>, secrets: Arc<dyn SecretStore>) -> Self {
         Self {
-            store: SettingsStore::new(data_dir),
+            store,
             keys: ProfileKeys::new(secrets),
         }
     }
@@ -92,7 +91,7 @@ mod tests {
     use crate::secrets::testing::MemoryStore;
 
     fn service(dir: &std::path::Path, secrets: &MemoryStore) -> ProfileService {
-        ProfileService::new(dir, Arc::new(secrets.clone()))
+        ProfileService::new(Arc::new(SettingsStore::new(dir)), Arc::new(secrets.clone()))
     }
 
     #[test]
