@@ -19,6 +19,13 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 open-ui-core = { path = "../crates/core" }
 tauri = { version = "2", features = [] }
+# `tauri.conf.json` の `plugins` を読み込むマクロ(`generate_context!`)が使う
+serde_json.workspace = true
 specta.workspace = true
 specta-typescript.workspace = true
 tauri-specta.workspace = true
+
+# 自動更新(デスクトップのみ)。モバイルは更新の仕組みが別なので入れない
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-process = "2.4.0"
+tauri-plugin-updater = "2.14.1"
