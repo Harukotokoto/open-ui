@@ -3,4 +3,10 @@
 //! Windows では Tauri をリンクした単体テストが起動できないため、
 //! テストが必要なロジックはこのクレートに置き、`src-tauri` はコマンドの入口だけにする。
 
+pub mod api;
 pub mod app_info;
+pub mod chat;
+pub mod error;
+pub mod fs;
+pub mod profiles;
+pub mod secrets;

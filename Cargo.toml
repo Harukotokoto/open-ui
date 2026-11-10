@@ -11,6 +11,14 @@ authors = ["Harukoto"]
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# HTTP。TLS は rustls(`.timeout` は付けない。→ SYSTEM-DESIGN §7.1)
+reqwest = { version = "0.13.5", default-features = false, features = ["json", "rustls", "stream"] }
+futures-util = "0.3"
+tokio = "1"
+tokio-util = "0.7"
+# OS の資格情報ストア(既定の v1 機能で Windows / macOS / Secret Service を選ぶ)
+keyring = "4.2.0"
+tempfile = "3"
 # tauri-specta が specta のバージョンを固定しているため、揃えて固定する
 specta = "=2.0.0-rc.26"
 specta-typescript = "=0.0.13"
