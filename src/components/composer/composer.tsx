@@ -18,6 +18,8 @@ interface ComposerProps {
   sendDisabled?: boolean;
   placeholder?: string;
   autoFocus?: boolean;
+  /** 送信ボタンの左に並べる操作(モデルの選択など)。 */
+  actions?: React.ReactNode;
 }
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行。返答中は送信ボタンが停止ボタンになる。 */
@@ -28,6 +30,7 @@ export function Composer({
   sendDisabled = false,
   placeholder = "メッセージを入力",
   autoFocus = false,
+  actions,
 }: ComposerProps) {
   const [text, setText] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
@@ -78,28 +81,31 @@ export function Composer({
           >
             <PlusIcon />
           </InputGroupButton>
-          {busy ? (
-            <InputGroupButton
-              variant="default"
-              size="icon-sm"
-              className="ml-auto rounded-full"
-              onClick={onStop}
-            >
-              <SquareIcon className="fill-current" />
-              <span className="sr-only">生成を止める</span>
-            </InputGroupButton>
-          ) : (
-            <InputGroupButton
-              type="submit"
-              variant="default"
-              size="icon-sm"
-              className="ml-auto rounded-full"
-              disabled={!canSend}
-            >
-              <ArrowUpIcon />
-              <span className="sr-only">送信</span>
-            </InputGroupButton>
-          )}
+          <div className="ml-auto flex items-center gap-1">
+            {actions}
+            {busy ? (
+              <InputGroupButton
+                variant="default"
+                size="icon-sm"
+                className="rounded-full"
+                onClick={onStop}
+              >
+                <SquareIcon className="fill-current" />
+                <span className="sr-only">生成を止める</span>
+              </InputGroupButton>
+            ) : (
+              <InputGroupButton
+                type="submit"
+                variant="default"
+                size="icon-sm"
+                className="rounded-full"
+                disabled={!canSend}
+              >
+                <ArrowUpIcon />
+                <span className="sr-only">送信</span>
+              </InputGroupButton>
+            )}
+          </div>
         </InputGroupAddon>
       </InputGroup>
     </form>

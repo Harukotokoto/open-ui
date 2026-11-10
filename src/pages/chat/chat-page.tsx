@@ -2,6 +2,7 @@ import { SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { MessageList } from "@/components/chat/message-list";
 import { Composer } from "@/components/composer/composer";
+import { ModelSelector } from "@/components/composer/model-selector";
 import { ConnectionDialog } from "@/components/settings/connection-dialog";
 import { Button } from "@/components/ui/button";
 import { Welcome } from "@/components/welcome/welcome";
@@ -21,6 +22,7 @@ export function ChatPage() {
       busy={session.isBusy}
       sendDisabled={profile === undefined}
       autoFocus
+      actions={profile ? <ModelSelector profile={profile} /> : null}
     />
   );
 

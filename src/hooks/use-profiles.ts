@@ -68,6 +68,23 @@ export function useSaveConnection() {
   });
 }
 
+/**
+ * 使用中の接続先にあるモデルのID一覧。保存済みのキーで取得する。
+ * `enabled` が偽の間は取りに行かない(メニューを開くまで通信しないため)。
+ */
+export function useAvailableModels(
+  profile: ConnectionProfile | undefined,
+  enabled: boolean,
+) {
+  return useQuery({
+    queryKey: ["models", profile?.id, profile?.baseUrl] as const,
+    queryFn: () => testConnection(profile as ConnectionProfile, null),
+    enabled: enabled && profile !== undefined,
+    staleTime: 60_000,
+    retry: false,
+  });
+}
+
 export interface TestConnectionInput {
   profile: ConnectionProfile;
   /** `null` なら保存済みのキーを使う */
