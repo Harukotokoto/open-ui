@@ -41,6 +41,16 @@ export const commands = {
 	profilesGet: () => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_get")),
 	/**  既存のプロファイルを更新する。入力を検査し、更新後の一覧を返す。 */
 	profilesUpdate: (profile: ConnectionProfile) => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_update", { profile })),
+	/**  雛形(LM Studio・Ollama など)から新しいプロファイルを追加する。追加後の一覧と新しいIDを返す。 */
+	profilesAdd: (preset: ProfilePreset) => typedError<ProfileAdded, AppError>(__TAURI_INVOKE("profiles_add", { preset })),
+	/**  プロファイルを削除する(APIキーも消える)。最後の1件は削除できない。 */
+	profilesRemove: (profileId: string) => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_remove", { profileId })),
+	/**  使用中のプロファイルを切り替える。 */
+	profilesSetActive: (profileId: string) => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_set_active", { profileId })),
+	/**  プロファイルのモデルを選び、そのプロファイルを使用中にする。`model` が無ければサーバーの既定。 */
+	profilesSelectModel: (profileId: string, model: string | null) => typedError<ProfileBook, AppError>(__TAURI_INVOKE("profiles_select_model", { profileId, model })),
+	/**  保存済みのプロファイルのサーバーにあるモデルのIDを返す。保存済みのキーで問い合わせる。 */
+	modelsList: (profileId: string) => typedError<string[], AppError>(__TAURI_INVOKE("models_list", { profileId })),
 	/**
 	 *  入力中のプロファイルでサーバーに接続できるか確かめ、見つかったモデルのIDを返す。
 	 * 
@@ -182,16 +192,23 @@ export type KeyStatus =
 /**  ストアに書けず、メモリにだけある。アプリを終了すると失われる */
 "unsaved";
 
-/**
- *  保存されたプロファイルの一覧。常に1件以上あり、`active_id` はその中のどれかを指す。
- * 
- *  ①ではプロファイルが1件だけ。複数の管理は③で足す。
- */
+/**  プロファイルを追加した結果。画面が、追加したものを開けるようにIDを添える。 */
+export type ProfileAdded = {
+	book: ProfileBook,
+	id: string,
+};
+
+/**  保存されたプロファイルの一覧。常に1件以上あり、`active_id` はその中のどれかを指す。 */
 export type ProfileBook = {
 	profiles: ConnectionProfile[],
 	/**  使用中のプロファイルのID */
 	activeId: string,
 };
+
+/**  追加するプロファイルの種類。名前とURLの初期値だけが違い、追加後は自由に編集できる。 */
+export type ProfilePreset = "lmStudio" | "ollama" | "llamaCpp" | "vllm" | 
+/**  上のどれでもないOpenAI互換サーバー。URLは書き換える前提の仮の値 */
+"custom";
 
 /**  接続先のAPIの種類。⑥でAnthropicなどを足すときはここにバリアントを追加する。 */
 export type ProviderKind = 

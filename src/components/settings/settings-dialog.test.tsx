@@ -32,6 +32,11 @@ vi.mock("@/services/profiles", () => ({
   }),
   getApiKeyStatus: vi.fn().mockResolvedValue("unset"),
   updateProfile: vi.fn(),
+  addProfile: vi.fn(),
+  removeProfile: vi.fn(),
+  setActiveProfile: vi.fn(),
+  selectModel: vi.fn(),
+  listModels: vi.fn(),
   setApiKey: vi.fn(),
   clearApiKey: vi.fn(),
   testConnection: vi.fn(),
@@ -75,9 +80,9 @@ describe("SettingsDialog", () => {
 
     await user.click(screen.getByRole("button", { name: "接続" }));
 
-    expect(await screen.findByLabelText("ベースURL")).toHaveValue(
-      "http://localhost:1234/v1",
-    );
+    const card = await screen.findByRole("group", { name: "LM Studio" });
+    expect(card).toHaveTextContent("http://localhost:1234/v1");
+    expect(card).toHaveTextContent("使用中");
     expect(screen.getByRole("button", { name: "接続" })).toHaveAttribute(
       "aria-current",
       "page",

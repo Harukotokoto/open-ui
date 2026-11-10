@@ -17,8 +17,10 @@ interface ConnectionFormProps {
   keyStatus: KeyStatus | undefined;
   /** 保存できたあとの処理 */
   onSaved?: () => void;
-  /** 渡すと「キャンセル」を出す(ダイアログで使うとき) */
+  /** 渡すと、保存せずに閉じるボタンを出す */
   onCancel?: () => void;
+  /** 閉じるボタンの文字 */
+  cancelLabel?: string;
 }
 
 /** 接続先の設定フォーム。名前・URL・APIキー・モデル名を編集し、接続を確かめて保存する。 */
@@ -27,6 +29,7 @@ export function ConnectionForm({
   keyStatus,
   onSaved,
   onCancel,
+  cancelLabel = "キャンセル",
 }: ConnectionFormProps) {
   const ids = {
     name: useId(),
@@ -209,7 +212,7 @@ export function ConnectionForm({
         <div className="flex gap-2">
           {onCancel && (
             <Button type="button" variant="ghost" onClick={onCancel}>
-              キャンセル
+              {cancelLabel}
             </Button>
           )}
           <Button type="submit" disabled={save.isPending}>

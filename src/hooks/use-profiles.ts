@@ -1,13 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { modelsKey } from "@/hooks/use-models";
 import {
+  addProfile,
   clearApiKey,
   getApiKeyStatus,
   getProfiles,
+  removeProfile,
+  selectModel,
+  setActiveProfile,
   setApiKey,
   testConnection,
   updateProfile,
 } from "@/services/profiles";
-import type { ConnectionProfile } from "@/types/bindings";
+import type { ConnectionProfile, ProfilePreset } from "@/types/bindings";
 
 const profilesKey = ["profiles"] as const;
 const keyStatusKey = (profileId: string) => ["key-status", profileId] as const;
@@ -64,24 +69,62 @@ export function useSaveConnection() {
       void queryClient.invalidateQueries({
         queryKey: keyStatusKey(profile.id),
       });
+      // URL・キーが変わるとモデルの一覧も変わるので、取り直す
+      void queryClient.invalidateQueries({ queryKey: modelsKey(profile.id) });
     },
   });
 }
 
-/**
- * 使用中の接続先にあるモデルのID一覧。保存済みのキーで取得する。
- * `enabled` が偽の間は取りに行かない(メニューを開くまで通信しないため)。
- */
-export function useAvailableModels(
-  profile: ConnectionProfile | undefined,
-  enabled: boolean,
-) {
-  return useQuery({
-    queryKey: ["models", profile?.id, profile?.baseUrl] as const,
-    queryFn: () => testConnection(profile as ConnectionProfile, null),
-    enabled: enabled && profile !== undefined,
-    staleTime: 60_000,
-    retry: false,
+/** 雛形からプロファイルを追加する。結果(追加後の一覧と新しいID)を返す。 */
+export function useAddProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (preset: ProfilePreset) => addProfile(preset),
+    onSuccess: ({ book }) => {
+      queryClient.setQueryData(profilesKey, book);
+    },
+  });
+}
+
+/** プロファイルを削除する。そのキーの状態とモデル一覧のキャッシュも捨てる。 */
+export function useRemoveProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (profileId: string) => removeProfile(profileId),
+    onSuccess: (book, profileId) => {
+      queryClient.setQueryData(profilesKey, book);
+      queryClient.removeQueries({ queryKey: modelsKey(profileId) });
+      queryClient.removeQueries({ queryKey: keyStatusKey(profileId) });
+    },
+  });
+}
+
+/** 使用中のプロファイルを切り替える。 */
+export function useSetActiveProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (profileId: string) => setActiveProfile(profileId),
+    onSuccess: (book) => {
+      queryClient.setQueryData(profilesKey, book);
+    },
+  });
+}
+
+export interface SelectModelInput {
+  profileId: string;
+  /** `null` ならサーバーの既定 */
+  model: string | null;
+}
+
+/** プロファイルのモデルを選ぶ。そのプロファイルが使用中になる。 */
+export function useSelectModel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ profileId, model }: SelectModelInput) =>
+      selectModel(profileId, model),
+    onSuccess: (book) => {
+      queryClient.setQueryData(profilesKey, book);
+    },
   });
 }
 

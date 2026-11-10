@@ -18,6 +18,15 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
+// jsdomには ResizeObserver・scrollIntoView もない。検索つきの一覧(cmdk)が使うので、何もしない実装で補う
+class ResizeObserverStub {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+globalThis.ResizeObserver ??= ResizeObserverStub;
+Element.prototype.scrollIntoView ??= () => {};
+
 afterEach(() => {
   cleanup();
 });

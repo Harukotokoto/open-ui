@@ -3,7 +3,9 @@ import {
   type ConnectionProfile,
   commands,
   type KeyStatus,
+  type ProfileAdded,
   type ProfileBook,
+  type ProfilePreset,
 } from "@/types/bindings";
 
 /** 接続プロファイルの一覧と、使用中のプロファイル。 */
@@ -16,6 +18,34 @@ export function updateProfile(
   profile: ConnectionProfile,
 ): Promise<ProfileBook> {
   return unwrap(commands.profilesUpdate(profile));
+}
+
+/** 雛形から新しいプロファイルを追加する。追加後の一覧と、新しいプロファイルのIDを返す。 */
+export function addProfile(preset: ProfilePreset): Promise<ProfileAdded> {
+  return unwrap(commands.profilesAdd(preset));
+}
+
+/** プロファイルを削除する(APIキーも消える)。最後の1件は削除できない。 */
+export function removeProfile(profileId: string): Promise<ProfileBook> {
+  return unwrap(commands.profilesRemove(profileId));
+}
+
+/** 使用中のプロファイルを切り替える。 */
+export function setActiveProfile(profileId: string): Promise<ProfileBook> {
+  return unwrap(commands.profilesSetActive(profileId));
+}
+
+/** プロファイルのモデルを選び、そのプロファイルを使用中にする。`null` ならサーバーの既定。 */
+export function selectModel(
+  profileId: string,
+  model: string | null,
+): Promise<ProfileBook> {
+  return unwrap(commands.profilesSelectModel(profileId, model));
+}
+
+/** 保存済みのプロファイルのサーバーにあるモデルのID。 */
+export function listModels(profileId: string): Promise<string[]> {
+  return unwrap(commands.modelsList(profileId));
 }
 
 /**
