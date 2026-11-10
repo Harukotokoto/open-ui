@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>open-ui (light)</title>
+  <rect x="8" y="8" width="1008" height="1008" rx="216" fill="#FAF9F5" stroke="#E8E6DC" stroke-width="16"/>
+  <path fill="#141413" d="M352 250H672A120 120 0 0 1 792 370V530A120 120 0 0 1 672 650H500L360 774V650H352A120 120 0 0 1 232 530V370A120 120 0 0 1 352 250Z"/>
+  <rect x="492" y="360" width="40" height="180" rx="20" fill="#FAF9F5"/>
+</svg>
