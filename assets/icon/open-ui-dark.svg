@@ -1,6 +1,23 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <title>open-ui (dark)</title>
-  <rect width="1024" height="1024" rx="224" fill="#141413"/>
-  <path fill="#FAF9F5" d="M352 250H672A120 120 0 0 1 792 370V530A120 120 0 0 1 672 650H500L360 774V650H352A120 120 0 0 1 232 530V370A120 120 0 0 1 352 250Z"/>
-  <rect x="492" y="360" width="40" height="180" rx="20" fill="#141413"/>
+  <title>open-ui</title>
+  <defs>
+    <linearGradient id="bg" gradientUnits="userSpaceOnUse" x1="512" y1="0" x2="512" y2="1024">
+      <stop offset="0" stop-color="#0C2436"/>
+      <stop offset="1" stop-color="#163A5A"/>
+    </linearGradient>
+    <clipPath id="squircle">
+      <path d="M 657.4899 0 C 785.7805 0 849.9258 0 898.9263 24.967 A 229.0688 229.0688 0 0 1 999.033 125.0737 C 1024 174.0742 1024 238.2195 1024 366.5101 L 1024 657.4899 C 1024 785.7805 1024 849.9258 999.033 898.9263 A 229.0688 229.0688 0 0 1 898.9263 999.033 C 849.9258 1024 785.7805 1024 657.4899 1024 L 366.5101 1024 C 238.2195 1024 174.0742 1024 125.0737 999.033 A 229.0688 229.0688 0 0 1 24.967 898.9263 C 0 849.9258 0 785.7805 0 657.4899 L 0 366.5101 C 0 238.2195 0 174.0742 24.967 125.0737 A 229.0688 229.0688 0 0 1 125.0737 24.967 C 174.0742 0 238.2195 0 366.5101 0 Z"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#squircle)">
+    <rect width="1024" height="1024" fill="url(#bg)"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(126, 224, 242)" opacity="0.9" transform="rotate(0 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(122, 238, 200)" opacity="0.9" transform="rotate(45 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(110, 196, 240)" opacity="0.9" transform="rotate(90 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(154, 176, 248)" opacity="0.9" transform="rotate(135 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(94, 180, 224)" opacity="0.9" transform="rotate(180 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(192, 192, 246)" opacity="0.9" transform="rotate(225 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(110, 224, 230)" opacity="0.9" transform="rotate(270 512 512)" style="mix-blend-mode:screen"/>
+    <rect x="407" y="212" width="210" height="380" rx="105" fill="rgb(176, 240, 234)" opacity="0.9" transform="rotate(315 512 512)" style="mix-blend-mode:screen"/>
+  </g>
 </svg>
