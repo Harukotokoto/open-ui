@@ -45,7 +45,7 @@ function SettingsBody() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      {/* 左上の閉じるボタン(top 19px・14px角)と縦の中心をそろえる */}
+      {/* 右上の閉じるボタン(top 12px・28px角)と縦の中心をそろえる */}
       <DialogHeader className="mac-material-titlebar h-13 shrink-0 justify-center border-b border-mac-separator px-12">
         <DialogTitle className="text-center text-mac-headline">
           設定

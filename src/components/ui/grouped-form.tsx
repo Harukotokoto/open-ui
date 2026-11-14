@@ -38,7 +38,7 @@ function GroupedFormSectionTitle({
     <h3
       data-slot="grouped-form-section-title"
       className={cn(
-        "px-[11px] text-mac-body font-semibold text-mac-label",
+        "text-mac-body font-semibold text-mac-label",
         className
       )}
       {...props}

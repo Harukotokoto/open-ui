@@ -31,7 +31,7 @@ export function ConnectionPanel() {
 
   return (
     <SettingSection title="接続先" plain>
-      <div className="flex flex-wrap items-center justify-between gap-2 px-[11px] pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-3">
         <p className="text-mac-subheadline text-mac-label-secondary">
           使用するOpenAI互換サーバーを管理します。
         </p>

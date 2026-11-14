@@ -16,7 +16,7 @@ const searchFieldVariants = cva(
         default: "bg-mac-field shadow-[0_0_0_1px_var(--mac-field-border)]",
         glass: "glass-surface",
         filled:
-          "bg-mac-fill-primary shadow-[0_0_0_1px_rgb(0_0_0/0.04)] dark:bg-white/13 dark:shadow-[0_0_0_1px_rgb(0_0_0/0.5)]",
+          "bg-mac-fill-primary shadow-[inset_0_0_0_1px_var(--glass-rim)]",
       },
       size: {
         sm: "h-5 pl-1.5 text-mac-subheadline [&_[data-slot=search-field-icon]]:size-3",

@@ -62,7 +62,7 @@ function DialogContent({
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-mac-window bg-mac-window p-5 text-mac-label shadow-mac-window dark:shadow-[0_0_0_1px_rgb(0_0_0/0.92),inset_0_0_0_1px_var(--mac-window-rim),0_18px_54px_rgb(0_0_0/0.57)] duration-200 outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] sm:max-w-md",
+          "fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-mac-window bg-mac-window p-5 text-mac-label shadow-mac-window dark:shadow-[0_0_0_1px_rgb(0_0_0/0.92),0_18px_54px_rgb(0_0_0/0.57)] after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:shadow-[inset_0_0_0_1px_var(--mac-window-rim)] duration-200 outline-none data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-[0.97] data-open:animate-in data-open:fade-in-0 data-open:zoom-in-[0.97] sm:max-w-md",
           showCloseButton && "pt-12",
           className
         )}
@@ -72,11 +72,11 @@ function DialogContent({
         {showCloseButton && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
-            className="group/close absolute top-[19px] left-[19px] flex size-3.5 items-center justify-center rounded-full [background:var(--mac-traffic-close)] shadow-[inset_0_0_0_0.5px_rgb(0_0_0/0.12)] outline-none focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-mac-accent/50"
+            className="absolute top-3 right-3 flex size-7 items-center justify-center rounded-full text-mac-label-secondary outline-none hover:bg-mac-fill-tertiary hover:text-mac-label focus-visible:outline-3 focus-visible:outline-solid focus-visible:outline-mac-accent/50"
           >
             <XIcon
-              className="size-2 text-black/60 opacity-0 group-hover/close:opacity-100 group-focus-visible/close:opacity-100"
-              strokeWidth={3}
+              className="size-4"
+              strokeWidth={2.25}
             />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
