@@ -57,7 +57,9 @@ export function AppSidebar() {
       >
         <SidebarHeader
           data-tauri-drag-region
-          className="px-2.5 pt-2.5 pb-1 mac:pt-11"
+          // 標準の枠のOSでは、検索欄の縦の中心を、右のツールバーのボタン(`--toolbar-height`の中央)にそろえる。
+          // 浮かぶサイドバーの外側の余白(8px)を引いて4px。重ねて出す狭い画面には余白がないので10px
+          className="px-2.5 pt-1 pb-1 in-data-[mobile=true]:pt-2.5 mac:pt-11"
         >
           <SearchField
             id={HISTORY_SEARCH_ID}
@@ -91,7 +93,7 @@ export function AppSidebar() {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                className="h-7 px-2 text-(length:--text-mac-body) hover:bg-mac-fill-quaternary"
+                className="h-7 px-2 text-(length:--text-mac-body) hover:bg-mac-fill-tertiary"
                 onClick={() => {
                   showSettings();
                   afterNavigate();

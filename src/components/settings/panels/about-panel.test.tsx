@@ -70,7 +70,7 @@ describe("AboutPanel", () => {
     renderPanel();
 
     await userEvent.click(screen.getByRole("button", { name: "今すぐ確認" }));
-    expect(await screen.findByText(/v0\.2\.0 に更新できます/)).toBeVisible();
+    expect(await screen.findByText(/v0\.2\.0に更新できます/)).toBeVisible();
 
     await userEvent.click(
       screen.getByRole("button", { name: "更新して再起動" }),

@@ -46,6 +46,11 @@
 
   /* 入力欄(浮かぶガラスのカプセル) */
   --composer-radius: 22px;
+
+  /* スクロールバーのつまみ。Windowsの標準(矢印ボタン付き)は他の部品と合わないので、細いつまみだけにする */
+  --scrollbar-thumb: color-mix(in srgb, var(--mac-label) 32%, transparent);
+  /* 上端でスクロールの内容が消えていく幅(ツールバーの下に切れ目を作らないため) */
+  --scroll-fade-size: 16px;
 }
 
 @utility welcome-title {
@@ -63,6 +68,11 @@
   }
   body {
     overflow: hidden;
+  }
+  /* 細いスクロールバー(つまみだけ)。macOSの重ねて表示するスクロールバーに近づける */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
   }
   /* マウスで押したときはリングを出さず、キーボードで移った先にだけmacOSのフォーカスリングを出す */
   :focus-visible {

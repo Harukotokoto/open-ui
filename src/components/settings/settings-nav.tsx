@@ -54,8 +54,9 @@ export function SettingsNav({
                     onClick={() => onSelect(id)}
                     className={cn(
                       "flex h-7 w-full cursor-default items-center gap-2 rounded-md px-1.5 text-left text-mac-body whitespace-nowrap text-mac-label outline-none focus-visible:mac-focus-ring",
+                      // 選択中もアクセントで塗らない。青のアイコンが同じ青に埋もれて見えなくなるため
                       active
-                        ? "bg-mac-accent text-mac-accent-foreground"
+                        ? "bg-mac-sidebar-selection font-medium"
                         : "hover:bg-mac-fill-tertiary",
                     )}
                   >

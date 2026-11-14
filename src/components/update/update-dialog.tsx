@@ -39,7 +39,7 @@ export function UpdateDialog({ enabled }: { enabled: boolean }) {
           <AlertDialogTitle>新しいバージョンがあります</AlertDialogTitle>
           <AlertDialogDescription>
             {app.update &&
-              `v${app.update.currentVersion} から v${app.update.version} に更新できます。更新するとアプリが再起動します。`}
+              `v${app.update.currentVersion}からv${app.update.version}に更新できます。更新するとアプリが再起動します。`}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {app.installing && (

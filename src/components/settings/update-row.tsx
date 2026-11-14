@@ -17,7 +17,7 @@ function statusText(app: ReturnType<typeof useUpdateCheck>): string {
     return `確認できませんでした: ${errorMessage(app.checkError)}`;
   }
   if (app.update) {
-    return `v${app.update.version} に更新できます。更新するとアプリが再起動します。`;
+    return `v${app.update.version}に更新できます。更新するとアプリが再起動します。`;
   }
   if (app.checked) return "最新のバージョンです。";
   return "新しいバージョンがあるか確認します。起動時にも1回確認しています。";

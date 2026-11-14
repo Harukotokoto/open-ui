@@ -31,7 +31,8 @@ export function RenameDialog({ conversation, onClose }: RenameDialogProps) {
         if (!open) onClose();
       }}
     >
-      <DialogContent className="sm:max-w-md">
+      {/* 閉じる操作はキャンセルボタンとEscに任せ、ウィンドウ風の赤い丸は付けない */}
+      <DialogContent showCloseButton={false} className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>名前を変更</DialogTitle>
           <DialogDescription>会話の名前を入力してください。</DialogDescription>

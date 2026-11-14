@@ -35,7 +35,7 @@ export function HistoryItem({
         aria-current={active ? "page" : undefined}
         title={conversation.title}
         onClick={() => onOpen(conversation.id)}
-        className="h-7 px-2 text-(length:--text-mac-body) hover:bg-mac-fill-quaternary data-active:font-medium data-active:hover:bg-sidebar-accent"
+        className="h-7 px-2 text-(length:--text-mac-body) hover:bg-mac-fill-tertiary data-active:font-medium data-active:hover:bg-sidebar-accent"
       >
         <span>{conversation.title}</span>
       </SidebarMenuButton>

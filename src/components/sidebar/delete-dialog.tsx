@@ -52,11 +52,15 @@ export function DeleteDialog({
         if (!open) close();
       }}
     >
-      <AlertDialogContent>
+      <AlertDialogContent className="data-[size=default]:max-w-[300px]!">
         <AlertDialogHeader>
-          <AlertDialogTitle>この会話を削除しますか?</AlertDialogTitle>
-          <AlertDialogDescription>
-            「{conversation?.title}」を削除します。元に戻せません。
+          <AlertDialogTitle>この会話を削除しますか？</AlertDialogTitle>
+          {/* 会話名が長くても、「元に戻せません。」だけが途中で折り返されないよう、文を分ける */}
+          <AlertDialogDescription className="text-mac-callout!">
+            <span className="line-clamp-3 break-words">
+              「{conversation?.title}」を削除します。
+            </span>
+            <span className="block">元に戻せません。</span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.isError && (

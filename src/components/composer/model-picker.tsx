@@ -1,4 +1,5 @@
 import { RefreshCwIcon } from "lucide-react";
+import { useState } from "react";
 import {
   type ModelsState,
   ProfileModelGroup,
@@ -10,7 +11,7 @@ import {
   CommandInput,
   CommandList,
 } from "@/components/ui/command";
-import { matchesModelQuery } from "@/lib/model-selection";
+import { activeModel, matchesModelQuery } from "@/lib/model-selection";
 import type { ProfileBook } from "@/types/bindings";
 
 interface ModelPickerProps {
@@ -32,8 +33,20 @@ export function ModelPicker({
   onRefresh,
   refreshing,
 }: ModelPickerProps) {
+  // 開いたときの強調は、先頭ではなく、いま選んでいる項目から始める。
+  // 先頭が青く塗られていると、チェックの付いた選択中の項目と取り違えるため
+  const [highlighted, setHighlighted] = useState(
+    `${book.activeId}:${activeModel(book) ?? ""}`,
+  );
+
   return (
-    <Command loop filter={matchesModelQuery} className="rounded-lg! p-0">
+    <Command
+      loop
+      value={highlighted}
+      onValueChange={setHighlighted}
+      filter={matchesModelQuery}
+      className="rounded-lg! p-0"
+    >
       <CommandInput placeholder="モデルを検索" aria-label="モデルを検索" />
       <CommandList className="max-h-72 p-1">
         <CommandEmpty>見つかりませんでした</CommandEmpty>
