@@ -172,18 +172,21 @@ export function Composer({
           <InputGroup className={GROUP_CLASS}>
             <InputGroupAddon
               align="inline-start"
-              className="self-end pb-2 pl-2"
+              className="self-end pb-2.5 has-[>button]:pl-2.5"
             >
               {attach}
             </InputGroupAddon>
-            {textarea("max-h-40 px-1 py-3")}
-            <InputGroupAddon align="inline-end" className="self-end pr-2 pb-2">
+            {textarea("max-h-40 min-h-12 px-1 py-3")}
+            <InputGroupAddon
+              align="inline-end"
+              className="self-end pb-2.5 has-[>button]:pr-2.5"
+            >
               <VoiceButton />
               {send}
             </InputGroupAddon>
           </InputGroup>
         </div>
-        <div className="flex min-h-7 items-center justify-between gap-2 px-3 pt-1.5">
+        <div className="flex min-h-7 items-center justify-between gap-2 pr-0.5 pl-3 pt-1.5">
           <p className="min-w-0 truncate text-mac-subheadline text-mac-label-secondary">
             {hint}
           </p>

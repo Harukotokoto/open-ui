@@ -62,6 +62,11 @@ interface ToolbarButtonProps {
   label: string;
   shortcut?: ShortcutId;
   onClick: () => void;
+  /**
+   * ポインタを載せる(またはキーボードで選ぶ)と、ボタンが左へ伸びて、
+   * アイコンの右に名前を出す。右端に置くボタン向け。
+   */
+  expandLabel?: boolean;
   children: ReactNode;
 }
 
@@ -70,6 +75,7 @@ export function ToolbarButton({
   label,
   shortcut,
   onClick,
+  expandLabel = false,
   children,
 }: ToolbarButtonProps) {
   return (
@@ -81,20 +87,40 @@ export function ToolbarButton({
             size="icon-lg"
             aria-label={label}
             onClick={onClick}
-            className="text-mac-label-secondary hover:text-mac-label [&_svg:not([class*='size-'])]:size-[17px]"
+            className={cn(
+              "text-mac-label-secondary hover:text-mac-label [&_svg:not([class*='size-'])]:size-[17px]",
+              // 縮んでいるときは今までと同じ28px角の丸。広がるときは幅だけが変わる
+              expandLabel &&
+                "group/expand size-auto h-7 min-w-7 gap-0 px-[5.5px] focus-visible:text-mac-label",
+            )}
           />
         }
       >
         {children}
+        {expandLabel && (
+          // 幅を `0fr` から `1fr` へ動かすと、文字数に合わせた幅へなめらかに伸びる
+          <span
+            aria-hidden
+            className="grid grid-cols-[0fr] opacity-0 transition-[grid-template-columns,opacity] duration-200 ease-out group-hover/expand:grid-cols-[1fr] group-hover/expand:opacity-100 group-focus-visible/expand:grid-cols-[1fr] group-focus-visible/expand:opacity-100 motion-reduce:transition-none"
+          >
+            <span className="overflow-hidden">
+              <span className="block pr-1.5 pl-1.5 text-mac-body font-medium whitespace-nowrap">
+                {label}
+              </span>
+            </span>
+          </span>
+        )}
       </TooltipTrigger>
-      <TooltipContent
-        side="bottom"
-        sideOffset={6}
-        className="flex items-center gap-2"
-      >
-        {label}
-        {shortcut && <ShortcutHint id={shortcut} />}
-      </TooltipContent>
+      {(!expandLabel || shortcut) && (
+        <TooltipContent
+          side="bottom"
+          sideOffset={6}
+          className="flex items-center gap-2"
+        >
+          {!expandLabel && label}
+          {shortcut && <ShortcutHint id={shortcut} />}
+        </TooltipContent>
+      )}
     </Tooltip>
   );
 }

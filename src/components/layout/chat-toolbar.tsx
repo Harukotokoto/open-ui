@@ -36,6 +36,7 @@ export function ChatToolbar({ conversationId, onNewChat }: ChatToolbarProps) {
         <ToolbarButton
           label="新規チャット"
           shortcut="newChat"
+          expandLabel
           onClick={onNewChat}
         >
           <SquarePenIcon />

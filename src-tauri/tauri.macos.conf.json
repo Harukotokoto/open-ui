@@ -4,7 +4,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "open-ui",
+        "title": "Open UI",
         "width": 1200,
         "height": 720,
         "minWidth": 640,

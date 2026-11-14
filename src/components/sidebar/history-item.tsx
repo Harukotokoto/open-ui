@@ -44,7 +44,7 @@ export function HistoryItem({
           render={
             <SidebarMenuAction
               showOnHover
-              className="top-1 rounded-[5px] text-mac-label-secondary hover:bg-mac-fill-secondary"
+              className="top-1/2 -translate-y-1/2 peer-data-[size=default]/menu-button:top-1/2 rounded-[5px] text-mac-label-secondary hover:bg-mac-fill-secondary"
             />
           }
           aria-label={`「${conversation.title}」の操作`}
