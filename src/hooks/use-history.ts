@@ -19,6 +19,13 @@ export function useHistoryList() {
   return useQuery({ queryKey: historyKey, queryFn: listHistory });
 }
 
+/** 一覧にある会話のタイトル。まだ保存していない会話は `undefined`。 */
+export function useConversationTitle(id: string) {
+  const { data } = useHistoryList();
+  return data?.conversations.find((conversation) => conversation.id === id)
+    ?.title;
+}
+
 /**
  * 保存済みの会話1件。開くたびにファイルから読み直す(開いている間の編集は `useChat` が持つ)。
  * `enabled` が偽の間(まだ保存していない新しい会話)は読みに行かない。

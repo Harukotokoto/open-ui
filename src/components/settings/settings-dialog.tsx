@@ -24,7 +24,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="h-[min(44rem,calc(100svh-2rem))] gap-0 **:font-normal overflow-hidden p-0 sm:max-w-4xl">
+      <DialogContent className="h-[min(40rem,calc(100svh-2rem))] gap-0 overflow-hidden bg-mac-window p-0 sm:max-w-3xl">
         <SettingsBody />
       </DialogContent>
     </Dialog>
@@ -45,8 +45,11 @@ function SettingsBody() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <DialogHeader className="border-b px-5 py-3 pr-12">
-        <DialogTitle className="text-sm">設定</DialogTitle>
+      {/* 左上の閉じるボタン(top 19px・14px角)と縦の中心をそろえる */}
+      <DialogHeader className="mac-material-titlebar h-13 shrink-0 justify-center border-b border-mac-separator px-12">
+        <DialogTitle className="text-center text-mac-headline">
+          設定
+        </DialogTitle>
         <DialogDescription className="sr-only">
           アプリの設定を変更します。
         </DialogDescription>
@@ -63,9 +66,14 @@ function SettingsBody() {
           />
           <section
             aria-label={active.label}
-            className="@container min-h-0 min-w-0 flex-1 overflow-y-auto px-6 py-4"
+            className="@container min-h-0 min-w-0 flex-1 overflow-y-auto px-6 py-5"
           >
-            <active.Panel />
+            <h2 className="mb-4 text-mac-title-3 font-bold text-mac-label">
+              {active.label}
+            </h2>
+            <div className="flex flex-col text-mac-body text-mac-label">
+              <active.Panel />
+            </div>
           </section>
         </div>
       </div>

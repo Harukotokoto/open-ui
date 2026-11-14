@@ -25,6 +25,21 @@ pub enum ShiftEnterBehavior {
     Send,
 }
 
+/// ボタンや選択中の項目に使う強調色。macOSのアクセントカラーと同じ選択肢。
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize, Type)]
+#[serde(rename_all = "camelCase")]
+pub enum AccentColor {
+    #[default]
+    Blue,
+    Purple,
+    Pink,
+    Red,
+    Orange,
+    Yellow,
+    Green,
+    Graphite,
+}
+
 /// 画面の設定。項目を足すときは `#[serde(default)]` で埋まるようにする(versionは上げない)。
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Type)]
 #[serde(rename_all = "camelCase", default)]
@@ -35,6 +50,8 @@ pub struct UiSettings {
     pub theme: Theme,
     /// 入力欄でShift+Enterを押したときの動き
     pub shift_enter: ShiftEnterBehavior,
+    /// アクセントカラー
+    pub accent: AccentColor,
 }
 
 impl Default for UiSettings {
@@ -43,6 +60,7 @@ impl Default for UiSettings {
             sidebar_open: true,
             theme: Theme::default(),
             shift_enter: ShiftEnterBehavior::default(),
+            accent: AccentColor::default(),
         }
     }
 }
@@ -74,6 +92,24 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&ShiftEnterBehavior::Newline).unwrap(),
             r#""newline""#
+        );
+    }
+
+    #[test]
+    fn a_missing_accent_falls_back_to_blue() {
+        let ui: UiSettings = serde_json::from_str(r#"{"theme":"dark"}"#).unwrap();
+
+        assert_eq!(ui.accent, AccentColor::Blue);
+    }
+
+    #[test]
+    fn accents_are_lowercase_in_json() {
+        let ui: UiSettings = serde_json::from_str(r#"{"accent":"graphite"}"#).unwrap();
+
+        assert_eq!(ui.accent, AccentColor::Graphite);
+        assert_eq!(
+            serde_json::to_string(&AccentColor::Purple).unwrap(),
+            r#""purple""#
         );
     }
 

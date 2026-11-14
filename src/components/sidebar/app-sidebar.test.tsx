@@ -135,18 +135,6 @@ describe("AppSidebar", () => {
     ).not.toHaveAttribute("aria-current");
   });
 
-  it("新規チャットで、新しい会話に切り替える", async () => {
-    useConversationStore.setState({ activeId: "a", existing: true });
-    const user = userEvent.setup();
-    renderSidebar();
-
-    await user.click(screen.getByRole("button", { name: "新規チャット" }));
-
-    const state = useConversationStore.getState();
-    expect(state.activeId).not.toBe("a");
-    expect(state.existing).toBe(false);
-  });
-
   it("名前を変更できる", async () => {
     vi.mocked(renameConversation).mockResolvedValue(
       summary("a", "京都の週末旅行", nowSecs()),

@@ -21,6 +21,8 @@ interface MessageListProps {
   error: Error | undefined;
   onRetry: () => void;
   onOpenSettings: () => void;
+  /** 会話の下端に浮かべておくもの(入力欄)。会話はこの下を通ってスクロールする。 */
+  footer?: React.ReactNode;
 }
 
 /** 会話の列。ユーザーの発言を基準に、返答へ自動で追従する。 */
@@ -31,6 +33,7 @@ export function MessageList({
   error,
   onRetry,
   onOpenSettings,
+  footer,
 }: MessageListProps) {
   const last = messages.at(-1);
   // 返答の最初の一文字が届くまでの間は、待っていることを示す
@@ -45,7 +48,7 @@ export function MessageList({
         <MessageScrollerViewport>
           <MessageScrollerContent
             aria-busy={busy}
-            className="mx-auto w-full max-w-3xl px-4 py-6"
+            className="mx-auto w-full max-w-(--chat-column-width) gap-7 px-5 pt-4"
           >
             {messages.map((message) =>
               message.role === "user" ? (
@@ -69,7 +72,7 @@ export function MessageList({
               ),
             )}
             {waiting && (
-              <div className="text-muted-foreground" role="status">
+              <div className="text-mac-label-secondary" role="status">
                 <Spinner />
                 <span className="sr-only">返答を待っています</span>
               </div>
@@ -81,9 +84,13 @@ export function MessageList({
                 onOpenSettings={onOpenSettings}
               />
             )}
+            {/* 下端に貼りつく。下半分だけ窓の色で埋め、注意書きの後ろを会話が透けないようにする */}
+            <div className="sticky bottom-0 mt-auto bg-linear-to-t from-mac-window from-30% to-transparent pt-2 pb-3">
+              <MessageScrollerButton className="data-[direction=end]:bottom-[calc(100%+0.5rem)]" />
+              {footer}
+            </div>
           </MessageScrollerContent>
         </MessageScrollerViewport>
-        <MessageScrollerButton />
       </MessageScroller>
     </MessageScrollerProvider>
   );

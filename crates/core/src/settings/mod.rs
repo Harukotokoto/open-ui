@@ -8,4 +8,4 @@ mod ui;
 
 pub use generation::{GenerationSettings, MAX_SYSTEM_PROMPT_CHARS};
 pub use store::{SETTINGS_VERSION, SettingsStore};
-pub use ui::{ShiftEnterBehavior, Theme, UiSettings};
+pub use ui::{AccentColor, ShiftEnterBehavior, Theme, UiSettings};

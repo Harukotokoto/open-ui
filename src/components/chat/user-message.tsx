@@ -11,7 +11,7 @@ interface UserMessageProps {
   message: UIMessage;
 }
 
-/** ユーザーの発言。mutedのバブルで右に寄せる。添付があれば、バブルの上に並べる。 */
+/** ユーザーの発言。アクセントカラーを薄く敷いたバブルで右に寄せる。添付があれば、バブルの上に並べる。 */
 export function UserMessage({ conversationId, message }: UserMessageProps) {
   const text = getMessageText(message);
   const attachments = getAttachmentParts(message).flatMap((part) => {
@@ -29,8 +29,8 @@ export function UserMessage({ conversationId, message }: UserMessageProps) {
           className="justify-end"
         />
         {text !== "" && (
-          <Bubble align="end" variant="muted">
-            <BubbleContent className="rounded-lg text-base whitespace-pre-wrap">
+          <Bubble align="end" variant="tinted">
+            <BubbleContent className="px-3.5 py-2 text-(length:--chat-font-size) leading-(--chat-line-height) whitespace-pre-wrap">
               {text}
             </BubbleContent>
           </Bubble>

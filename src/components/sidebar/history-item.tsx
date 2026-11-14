@@ -29,18 +29,24 @@ export function HistoryItem({
   onDelete,
 }: HistoryItemProps) {
   return (
-    <SidebarMenuItem className="mb-1">
+    <SidebarMenuItem>
       <SidebarMenuButton
         isActive={active}
         aria-current={active ? "page" : undefined}
         title={conversation.title}
         onClick={() => onOpen(conversation.id)}
+        className="h-7 px-2 text-(length:--text-mac-body) hover:bg-mac-fill-quaternary data-active:font-medium data-active:hover:bg-sidebar-accent"
       >
         <span>{conversation.title}</span>
       </SidebarMenuButton>
       <DropdownMenu>
         <DropdownMenuTrigger
-          render={<SidebarMenuAction showOnHover />}
+          render={
+            <SidebarMenuAction
+              showOnHover
+              className="top-1 rounded-[5px] text-mac-label-secondary hover:bg-mac-fill-secondary"
+            />
+          }
           aria-label={`「${conversation.title}」の操作`}
         >
           <MoreHorizontalIcon />

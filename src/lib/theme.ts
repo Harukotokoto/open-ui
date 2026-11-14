@@ -1,4 +1,4 @@
-import type { Theme } from "@/types/bindings";
+import type { AccentColor, Theme } from "@/types/bindings";
 
 /** ユーザーが選ぶテーマ。`system` は OS の設定に従う。設定ファイルに保存する。 */
 export type ThemePreference = Theme;
@@ -15,4 +15,24 @@ export function resolveTheme(
     return systemPrefersDark ? "dark" : "light";
   }
   return preference;
+}
+
+/** 選べるアクセントカラー(設定画面に並べる順)。 */
+export const ACCENT_COLORS: readonly AccentColor[] = [
+  "blue",
+  "purple",
+  "pink",
+  "red",
+  "orange",
+  "yellow",
+  "green",
+  "graphite",
+];
+
+/**
+ * アクセントカラーを切り替える `<html>` のクラス(macOSテーマの `.mac-accent-*`)。
+ * 青はテーマの既定なので、クラスを付けない。
+ */
+export function accentClass(accent: AccentColor): string | null {
+  return accent === "blue" ? null : `mac-accent-${accent}`;
 }

@@ -26,22 +26,20 @@ const AUTOSAVE_DELAY = 700;
 export function GenerationPanel() {
   const { data, isPending, isError, error } = useGenerationSettings();
 
+  if (data) return <GenerationForm saved={data} />;
+  if (isPending) {
+    return (
+      <div className="flex justify-center py-6">
+        <Spinner />
+      </div>
+    );
+  }
   return (
-    <SettingSection title="生成">
-      {data ? (
-        <GenerationForm saved={data} />
-      ) : isPending ? (
-        <div className="flex justify-center py-6">
-          <Spinner />
-        </div>
-      ) : (
-        isError && (
-          <Alert variant="destructive">
-            <AlertDescription>{errorMessage(error)}</AlertDescription>
-          </Alert>
-        )
-      )}
-    </SettingSection>
+    isError && (
+      <Alert variant="destructive">
+        <AlertDescription>{errorMessage(error)}</AlertDescription>
+      </Alert>
+    )
   );
 }
 
@@ -82,60 +80,62 @@ function GenerationForm({ saved }: { saved: GenerationSettings }) {
 
   return (
     <>
-      <SettingRow
-        label="システムプロンプト"
-        htmlFor={ids.prompt}
-        description="すべての会話の先頭に付けます。空欄なら付けません。"
-        stacked
-      >
-        <Textarea
-          id={ids.prompt}
-          rows={4}
-          className="max-h-60 min-h-24"
-          value={draft.systemPrompt}
-          onChange={(event) => change({ systemPrompt: event.target.value })}
-          onBlur={commit}
-        />
-      </SettingRow>
+      <SettingSection title="すべての会話">
+        <SettingRow
+          label="システムプロンプト"
+          htmlFor={ids.prompt}
+          description="すべての会話の先頭に付けます。空欄なら付けません。"
+          stacked
+        >
+          <Textarea
+            id={ids.prompt}
+            rows={4}
+            className="max-h-60 min-h-24"
+            value={draft.systemPrompt}
+            onChange={(event) => change({ systemPrompt: event.target.value })}
+            onBlur={commit}
+          />
+        </SettingRow>
 
-      <SettingRow
-        label="temperature"
-        htmlFor={ids.temperature}
-        description={`${TEMPERATURE_MIN}〜${TEMPERATURE_MAX}。空欄ならサーバーの既定です。`}
-      >
-        <Input
-          id={ids.temperature}
-          type="number"
-          inputMode="decimal"
-          step="0.1"
-          min={TEMPERATURE_MIN}
-          max={TEMPERATURE_MAX}
-          placeholder="既定"
-          className="w-28"
-          value={draft.temperature}
-          onChange={(event) => change({ temperature: event.target.value })}
-          onBlur={commit}
-        />
-      </SettingRow>
+        <SettingRow
+          label="temperature"
+          htmlFor={ids.temperature}
+          description={`${TEMPERATURE_MIN}〜${TEMPERATURE_MAX}。空欄ならサーバーの既定です。`}
+        >
+          <Input
+            id={ids.temperature}
+            type="number"
+            inputMode="decimal"
+            step="0.1"
+            min={TEMPERATURE_MIN}
+            max={TEMPERATURE_MAX}
+            placeholder="既定"
+            className="w-28"
+            value={draft.temperature}
+            onChange={(event) => change({ temperature: event.target.value })}
+            onBlur={commit}
+          />
+        </SettingRow>
 
-      <SettingRow
-        label="最大トークン数"
-        htmlFor={ids.maxTokens}
-        description="返答の長さの上限。空欄ならサーバーの既定です。"
-      >
-        <Input
-          id={ids.maxTokens}
-          type="number"
-          inputMode="numeric"
-          step="1"
-          min={1}
-          placeholder="既定"
-          className="w-28"
-          value={draft.maxTokens}
-          onChange={(event) => change({ maxTokens: event.target.value })}
-          onBlur={commit}
-        />
-      </SettingRow>
+        <SettingRow
+          label="最大トークン数"
+          htmlFor={ids.maxTokens}
+          description="返答の長さの上限。空欄ならサーバーの既定です。"
+        >
+          <Input
+            id={ids.maxTokens}
+            type="number"
+            inputMode="numeric"
+            step="1"
+            min={1}
+            placeholder="既定"
+            className="w-28"
+            value={draft.maxTokens}
+            onChange={(event) => change({ maxTokens: event.target.value })}
+            onBlur={commit}
+          />
+        </SettingRow>
+      </SettingSection>
 
       <div className="min-h-9 pt-3" aria-live="polite">
         {problem ? (
