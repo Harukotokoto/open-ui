@@ -48,7 +48,7 @@ export function ToolbarGroup({
   return (
     <div
       className={cn(
-        "flex shrink-0 items-center rounded-full p-0.5 mac-glass",
+        "flex shrink-0 items-center rounded-full p-0.5 glass-surface",
         className,
       )}
     >

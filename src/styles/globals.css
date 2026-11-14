@@ -51,6 +51,16 @@
   --scrollbar-thumb: color-mix(in srgb, var(--mac-label) 32%, transparent);
   /* 上端でスクロールの内容が消えていく幅(ツールバーの下に切れ目を作らないため) */
   --scroll-fade-size: 16px;
+
+  /* ガラスの縁。上下と左右で色を変えると角で継ぎ目が出るので、全周を同じ細い線にする */
+  --glass-rim: color-mix(in srgb, var(--mac-label) 14%, transparent);
+}
+
+@utility glass-surface {
+  background-color: var(--mac-glass);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-rim),
+    var(--mac-glass-shadow);
 }
 
 @utility welcome-title {

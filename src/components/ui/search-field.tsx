@@ -14,7 +14,7 @@ const searchFieldVariants = cva(
     variants: {
       variant: {
         default: "bg-mac-field shadow-[0_0_0_1px_var(--mac-field-border)]",
-        glass: "mac-glass",
+        glass: "glass-surface",
         filled:
           "bg-mac-fill-primary shadow-[0_0_0_1px_rgb(0_0_0/0.04)] dark:bg-white/13 dark:shadow-[0_0_0_1px_rgb(0_0_0/0.5)]",
       },

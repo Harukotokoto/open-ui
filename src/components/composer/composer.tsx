@@ -44,7 +44,7 @@ interface ComposerProps {
  * 入力中は常にカーソルがあるので、フォーカスリングは出さない。
  */
 const SHELL_CLASS =
-  "rounded-(--composer-radius) mac-glass backdrop-blur-xl backdrop-saturate-150 transition-[outline-color] outline-2 outline-offset-2 outline-transparent";
+  "rounded-(--composer-radius) glass-surface backdrop-blur-xl backdrop-saturate-150 transition-[outline-color] outline-2 outline-offset-2 outline-transparent";
 
 /** 殻の中の入力欄。枠と背景は殻に任せる。 */
 const GROUP_CLASS =
