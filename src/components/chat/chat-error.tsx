@@ -1,3 +1,4 @@
+import { CircleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,7 @@ interface ChatErrorProps {
 export function ChatError({ error, onRetry, onOpenSettings }: ChatErrorProps) {
   return (
     <Alert variant="destructive">
+      <CircleAlertIcon aria-hidden />
       <AlertTitle>返答を取得できませんでした</AlertTitle>
       <AlertDescription>
         <p>{error.message}</p>

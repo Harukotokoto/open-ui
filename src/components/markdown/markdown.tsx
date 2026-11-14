@@ -67,6 +67,27 @@ const TRANSLATIONS = {
   zoomOut: "縮小",
 };
 
+/**
+ * Streamdownの既定の見た目への上書き(部品側のclassより強い、親からのセレクターで当てる)。
+ * - 見出しは本文(14px)に対して大きすぎるので、macOSの文字スタイルに合わせる
+ * - 箇条書きは、折り返した行が記号の下に回り込まないよう、記号を外に出してぶら下げる
+ * - 引用は、日本語の斜体(疑似斜体)が読みにくいので傾けない
+ */
+const TYPOGRAPHY_CLASS = [
+  "[&_[data-streamdown=heading-1]]:text-mac-title-1",
+  "[&_[data-streamdown=heading-2]]:text-mac-title-2",
+  "[&_[data-streamdown=heading-3]]:text-mac-title-3",
+  "[&_[data-streamdown=heading-4]]:text-(length:--chat-font-size)",
+  "[&_[data-streamdown=heading-5]]:text-(length:--chat-font-size)",
+  "[&_[data-streamdown=heading-6]]:text-(length:--chat-font-size)",
+  "[&_[data-streamdown=unordered-list]]:list-outside",
+  "[&_[data-streamdown=unordered-list]]:pl-6",
+  "[&_[data-streamdown=ordered-list]]:list-outside",
+  "[&_[data-streamdown=ordered-list]]:pl-6",
+  "[&_[data-streamdown=blockquote]]:my-0",
+  "[&_[data-streamdown=blockquote]]:not-italic",
+].join(" ");
+
 interface MarkdownProps {
   children: string;
   /** 本文を出している最中か。`true` の間は書きかけの記法を整え、新しい文字をフェードインする。 */
@@ -95,7 +116,7 @@ export function Markdown({
       components={COMPONENTS}
       controls={CONTROLS}
       translations={TRANSLATIONS}
-      className={cn("space-y-3", className)}
+      className={cn("space-y-3", TYPOGRAPHY_CLASS, className)}
     >
       {children}
     </Streamdown>

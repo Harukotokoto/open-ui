@@ -21,7 +21,7 @@ export function AssistantMessage({
   const stats = getReplyStats(message);
   return (
     <Message>
-      <MessageContent className="gap-3 text-base leading-7">
+      <MessageContent className="gap-3 text-(length:--chat-font-size) leading-(--chat-line-height) text-mac-label">
         {message.parts.map((part, index) => {
           // パーツは追記されるだけで並べ替わらないため、位置をkeyにしてよい
           const key = `${message.id}-${index}`;

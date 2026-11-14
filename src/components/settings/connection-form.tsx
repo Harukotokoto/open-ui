@@ -115,7 +115,7 @@ export function ConnectionForm({
           required
         />
         <FieldDescription>
-          OpenAI互換のAPIのURL(例: LM Studioの`http://localhost:1234/v1`)
+          OpenAI互換のAPIのURL(例: LM Studioならhttp://localhost:1234/v1)
         </FieldDescription>
       </Field>
 

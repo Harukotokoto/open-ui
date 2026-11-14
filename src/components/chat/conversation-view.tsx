@@ -48,26 +48,26 @@ export function ConversationView({
   }
 
   return (
-    <>
-      <div className="min-h-0 flex-1">
-        <MessageList
-          conversationId={id}
-          messages={session.messages}
-          busy={session.isBusy}
-          error={session.error}
-          onRetry={() => void session.retry()}
-          onOpenSettings={onOpenSettings}
-        />
-      </div>
-      <div className="mx-auto w-full max-w-3xl px-4 pb-3">
-        {/* 会話の途中は、1行のスリムな入力欄。モデルの選択は下の段に置く */}
-        <Composer
-          {...composerProps}
-          variant="compact"
-          hint={AI_NOTICE}
-          actions={<ModelSelector className="h-6 px-1.5 text-xs" />}
-        />
-      </div>
-    </>
+    <div className="min-h-0 flex-1">
+      <MessageList
+        conversationId={id}
+        messages={session.messages}
+        busy={session.isBusy}
+        error={session.error}
+        onRetry={() => void session.retry()}
+        onOpenSettings={onOpenSettings}
+        footer={
+          // 会話の途中は、1行のスリムな入力欄。モデルの選択は下の段に置く
+          <Composer
+            {...composerProps}
+            variant="compact"
+            hint={AI_NOTICE}
+            actions={
+              <ModelSelector className="h-6 px-2 text-mac-subheadline" />
+            }
+          />
+        }
+      />
+    </div>
   );
 }

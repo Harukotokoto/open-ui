@@ -58,14 +58,14 @@ export function HistoryList({
   if (error) {
     return (
       <SidebarGroup>
-        <p className="px-2 text-sm text-destructive">
+        <p className="px-2 text-mac-body text-mac-red">
           履歴を読み込めませんでした。{errorMessage(error)}
         </p>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
-          className="mx-2 mt-2"
+          className="mx-2 mt-2 self-start"
           onClick={onRetry}
         >
           再読み込み
@@ -75,7 +75,7 @@ export function HistoryList({
   }
 
   const skippedNote = skipped > 0 && (
-    <p className="px-4 pb-2 text-xs text-muted-foreground">
+    <p className="px-4 pb-2 text-mac-subheadline text-mac-label-secondary">
       読み込めない履歴が{skipped}件あります(ファイルはそのまま残しています)。
     </p>
   );
@@ -84,7 +84,7 @@ export function HistoryList({
     return (
       <>
         <SidebarGroup>
-          <p className="px-2 text-sm text-muted-foreground">
+          <p className="px-2 py-1 text-mac-body text-mac-label-secondary">
             {isEmpty ? "履歴はまだありません" : "見つかりませんでした"}
           </p>
         </SidebarGroup>
@@ -96,8 +96,10 @@ export function HistoryList({
   return (
     <>
       {groups.map((group) => (
-        <SidebarGroup key={group.id}>
-          <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+        <SidebarGroup key={group.id} className="py-1">
+          <SidebarGroupLabel className="h-6 font-semibold text-mac-label-secondary">
+            {group.label}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((conversation) => (

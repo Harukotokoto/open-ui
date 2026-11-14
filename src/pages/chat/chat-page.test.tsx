@@ -81,7 +81,7 @@ describe("ChatPage", () => {
     renderPage();
 
     expect(
-      screen.getByRole("heading", { name: "今日は何をしましょうか?" }),
+      screen.getByRole("heading", { name: "今日は何をしましょうか？" }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("textbox", { name: "メッセージ" }),
@@ -116,7 +116,7 @@ describe("ChatPage", () => {
       expect.any(Function),
     );
     expect(
-      screen.queryByRole("heading", { name: "今日は何をしましょうか?" }),
+      screen.queryByRole("heading", { name: "今日は何をしましょうか？" }),
     ).not.toBeInTheDocument();
     // 会話の途中は、1行の入力欄と注意書きに変わる
     expect(
@@ -195,7 +195,7 @@ describe("ChatPage", () => {
       useConversationStore.setState({ activeId: "chat-2", existing: false }),
     );
     expect(
-      await screen.findByRole("heading", { name: "今日は何をしましょうか?" }),
+      await screen.findByRole("heading", { name: "今日は何をしましょうか？" }),
     ).toBeInTheDocument();
     expect(cancelChat).not.toHaveBeenCalled();
 
@@ -322,7 +322,7 @@ describe("ChatPage", () => {
       screen.getByRole("button", { name: "新しい会話を始める" }),
     );
     expect(
-      await screen.findByRole("heading", { name: "今日は何をしましょうか?" }),
+      await screen.findByRole("heading", { name: "今日は何をしましょうか？" }),
     ).toBeInTheDocument();
     expect(useConversationStore.getState().existing).toBe(false);
   });

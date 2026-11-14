@@ -1,6 +1,8 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+/* CupertinoUIのmacOSテーマ。色・素材・角丸・文字の大きさはここで決まる(生成物なので直接編集しない) */
+@import "./macos.css";
 
 /* Streamdown(Markdown表示)の部品が使うTailwindのクラスを拾う。node_modules はスキャンされないため */
 @source "../../node_modules/streamdown/dist/*.js";
@@ -9,153 +11,82 @@
 @source "../../node_modules/@streamdown/math/dist/*.js";
 @source "../../node_modules/@streamdown/cjk/dist/*.js";
 
-@custom-variant dark (&:is(.dark *));
-/* フォーカス時に枠(リング・枠線の色の変化)を出さない。`focus-visible:` の指定を無効にする */
-@custom-variant focus-visible (&:not(*));
+/* macOSで動いているとき(`<html data-platform="mac">`)だけ効かせる。信号機ボタンの場所を空けるのに使う */
+@custom-variant mac (&:where([data-platform="mac"] *));
+
 /*
- * テーマ(ニュートラルなグレー系)
- * 色・角丸・フォントの数値はこのファイルの CSS 変数に集約する。
- * コンポーネント側に色や角丸の値を直書きしない。
+ * アプリ固有の値。macOSテーマの値(`--mac-*`)に無いものだけを置く。
+ * コンポーネント側に数値を直書きしない。
  */
-
-@theme inline {
-  --font-sans:
-    system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI",
-    "Meiryo", sans-serif;
-  --font-heading: var(--font-sans);
-  --font-serif:
-    ui-serif, Georgia, "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP",
-    serif;
-  --font-mono:
-    ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
-
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-chart-5: var(--chart-5);
-  --color-chart-4: var(--chart-4);
-  --color-chart-3: var(--chart-3);
-  --color-chart-2: var(--chart-2);
-  --color-chart-1: var(--chart-1);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  /* ボタン・入力欄・メニュー項目などの操作部品(`rounded-md` / `rounded-lg`)は `rounded-sm` と同じ大きさにそろえる */
-  --radius-md: var(--radius-sm);
-  --radius-lg: var(--radius-sm);
-  /* ダイアログなどの面(`rounded-xl` 以上)は `--radius` の大きさにする */
-  --radius-xl: var(--radius);
-  --radius-2xl: var(--radius);
-  --radius-3xl: var(--radius);
-  --radius-4xl: var(--radius);
-}
-
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
-  --card: #f5f5f5;
-  --card-foreground: #1a1a1a;
-  --popover: #ffffff;
-  --popover-foreground: #1a1a1a;
-  --primary: #1a1a1a;
-  --primary-foreground: #ffffff;
-  --secondary: #f5f5f5;
-  --secondary-foreground: #1a1a1a;
-  --muted: #f5f5f5;
-  --muted-foreground: #666666;
-  --accent: #ebebeb;
-  --accent-foreground: #1a1a1a;
-  --destructive: #b53333;
-  --border: #e0e0e0;
-  --input: #e0e0e0;
-  /* フォーカスの境界線は非テキストのコントラスト 3:1 以上(背景 #ffffff に対して約 4.7:1)にする */
-  --ring: #737373;
-  --chart-1: #262626;
-  --chart-2: #525252;
-  --chart-3: #737373;
-  --chart-4: #a3a3a3;
-  --chart-5: #d4d4d4;
-  --radius: 0.75rem;
-  --sidebar: #fafafa;
-  --sidebar-foreground: #1a1a1a;
-  --sidebar-primary: #1a1a1a;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #ebebeb;
-  --sidebar-accent-foreground: #1a1a1a;
-  --sidebar-border: #e0e0e0;
-  --sidebar-ring: #737373;
+  /* 日本語の文字はシステムのゴシック体に落とす(SF ProとSegoe UIは日本語を持たない) */
+  --font-macos:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", "Hiragino Sans",
+    "Helvetica Neue", "Segoe UI", "Yu Gothic UI", "Meiryo", system-ui,
+    sans-serif;
+  --font-macos-mono:
+    ui-monospace, "SF Mono", SFMono-Regular, Menlo, "Cascadia Code", Consolas,
+    monospace;
+
+  /* ツールバーの高さ。信号機ボタンの縦位置(tauri.macos.conf.json)はこの中央に合わせてある */
+  --toolbar-height: 52px;
+  /* 信号機ボタンが占める幅(左端から、3つのボタンとその後ろの余白まで) */
+  --traffic-lights-inset: 78px;
+  --sidebar-panel-width: 15rem;
+
+  /* 会話の本文。macOSの本文(13px)より大きくして、長い返答を読みやすくする */
+  --chat-font-size: 14px;
+  --chat-line-height: 1.65;
+  --chat-column-width: 46rem;
+
+  /* 最初の画面の見出し */
+  --welcome-title-size: 28px;
+  --welcome-title-line-height: 34px;
+  --welcome-title-tracking: -0.022em;
+
+  /* 入力欄(浮かぶガラスのカプセル) */
+  --composer-radius: 22px;
+
+  /* スクロールバーのつまみ。Windowsの標準(矢印ボタン付き)は他の部品と合わないので、細いつまみだけにする */
+  --scrollbar-thumb: color-mix(in srgb, var(--mac-label) 32%, transparent);
+  /* 上端でスクロールの内容が消えていく幅(ツールバーの下に切れ目を作らないため) */
+  --scroll-fade-size: 16px;
+
+  /* ガラスの縁。上下と左右で色を変えると角で継ぎ目が出るので、全周を同じ細い線にする */
+  --glass-rim: color-mix(in srgb, var(--mac-label) 14%, transparent);
 }
 
-.dark {
-  --background: #1a1a1a;
-  --foreground: #ececec;
-  --card: #2f2f2f;
-  --card-foreground: #ececec;
-  --popover: #2f2f2f;
-  --popover-foreground: #ececec;
-  --primary: #ececec;
-  --primary-foreground: #1a1a1a;
-  --secondary: #2f2f2f;
-  --secondary-foreground: #ececec;
-  --muted: #2f2f2f;
-  --muted-foreground: #a3a3a3;
-  --accent: #3a3a3a;
-  --accent-foreground: #ececec;
-  --destructive: #e5726b;
-  --border: #404040;
-  --input: #404040;
-  --ring: #a3a3a3;
-  --chart-1: #ececec;
-  --chart-2: #cfcfcf;
-  --chart-3: #a3a3a3;
-  --chart-4: #737373;
-  --chart-5: #525252;
-  --sidebar: #141414;
-  --sidebar-foreground: #ececec;
-  --sidebar-primary: #ececec;
-  --sidebar-primary-foreground: #1a1a1a;
-  --sidebar-accent: #2f2f2f;
-  --sidebar-accent-foreground: #ececec;
-  --sidebar-border: #404040;
-  --sidebar-ring: #a3a3a3;
+@utility glass-surface {
+  background-color: var(--mac-glass);
+  box-shadow:
+    inset 0 0 0 1px var(--glass-rim),
+    var(--mac-glass-shadow);
 }
+
+@utility welcome-title {
+  font-size: var(--welcome-title-size);
+  line-height: var(--welcome-title-line-height);
+  letter-spacing: var(--welcome-title-tracking);
+  font-weight: 600;
+}
+
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  /* ブラウザ標準のフォーカス枠も出さない(`focus-visible:` のリングは上のカスタムバリアントで無効) */
-  :focus-visible {
-    outline: none;
-  }
-  html {
-    @apply font-sans;
+  html,
+  body,
+  #root {
+    height: 100%;
   }
   body {
-    @apply bg-background text-foreground;
-    /* 本文は 15〜16px、行間 1.6〜1.7(設計: 読みやすさ重視のタイポグラフィ) */
-    font-size: 15px;
-    line-height: 1.65;
+    overflow: hidden;
+  }
+  /* 細いスクロールバー(つまみだけ)。macOSの重ねて表示するスクロールバーに近づける */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
+  /* マウスで押したときはリングを出さず、キーボードで移った先にだけmacOSのフォーカスリングを出す */
+  :focus-visible {
+    outline: none;
   }
 }
 

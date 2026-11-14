@@ -7,10 +7,14 @@ export function AboutPanel() {
   const { data } = useAppInfo();
 
   return (
-    <SettingSection title="バージョン情報">
-      <SettingRow label="アプリ">{data?.name ?? "open-ui"}</SettingRow>
+    <SettingSection title="このアプリ">
+      <SettingRow label="アプリ">
+        <span className="text-mac-label-secondary">
+          {data?.name ?? "open-ui"}
+        </span>
+      </SettingRow>
       <SettingRow label="バージョン">
-        <span className="text-sm tabular-nums">
+        <span className="text-mac-label-secondary tabular-nums">
           {data ? `v${data.version}` : "…"}
         </span>
       </SettingRow>

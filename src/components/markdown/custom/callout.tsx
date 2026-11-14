@@ -10,21 +10,26 @@ import { cn } from "@/lib/utils";
 
 type CalloutType = "note" | "tip" | "warning" | "danger";
 
+/** 種類ごとの色(`--callout`)。背景の薄い色味とアイコンに使い、文字は読みやすいよう本文の色のままにする。 */
 const VARIANTS: Record<
   CalloutType,
   { label: string; icon: LucideIcon; className: string }
 > = {
-  note: { label: "補足", icon: Info, className: "border-l-muted-foreground" },
-  tip: { label: "ヒント", icon: Lightbulb, className: "border-l-ring" },
+  note: { label: "補足", icon: Info, className: "[--callout:var(--mac-gray)]" },
+  tip: {
+    label: "ヒント",
+    icon: Lightbulb,
+    className: "[--callout:var(--mac-accent)]",
+  },
   warning: {
     label: "注意",
     icon: TriangleAlert,
-    className: "border-l-foreground",
+    className: "[--callout:var(--mac-orange)]",
   },
   danger: {
     label: "警告",
     icon: OctagonAlert,
-    className: "border-l-destructive text-destructive",
+    className: "[--callout:var(--mac-red)]",
   },
 };
 
@@ -54,13 +59,17 @@ export function Callout({ type, title, children }: CalloutProps) {
       data-slot="callout"
       aria-label={heading ?? variant.label}
       className={cn(
-        "my-3 flex gap-2.5 rounded-lg border border-l-4 bg-card px-3 py-2.5 text-sm leading-6 text-card-foreground",
+        // 色味を薄く敷いた角丸の面(枠線や太い縦線は使わない)
+        "my-3 flex gap-2.5 rounded-mac-group bg-[color-mix(in_srgb,var(--callout)_12%,transparent)] px-3.5 py-3 text-(length:--chat-font-size) leading-(--chat-line-height) text-mac-label",
         variant.className,
       )}
     >
-      <Icon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
-      <div className="min-w-0 flex-1 text-foreground [&>:first-child]:mt-0 [&>:last-child]:mb-0">
-        {heading && <p className="mb-1 font-medium">{heading}</p>}
+      <Icon
+        aria-hidden="true"
+        className="mt-0.5 size-4 shrink-0 text-(--callout)"
+      />
+      <div className="min-w-0 flex-1 [&>:first-child]:mt-0 [&>:last-child]:mb-0">
+        {heading && <p className="mb-1 font-semibold">{heading}</p>}
         {children}
       </div>
     </aside>

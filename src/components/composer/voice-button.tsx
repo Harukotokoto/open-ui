@@ -10,6 +10,7 @@ export function VoiceButton() {
       size="icon-sm"
       disabled
       aria-label="音声入力(準備中)"
+      className="size-7 rounded-full [&>svg:not([class*='size-'])]:size-4"
     >
       <MicIcon />
     </InputGroupButton>

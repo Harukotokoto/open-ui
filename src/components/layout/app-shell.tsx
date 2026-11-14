@@ -1,4 +1,5 @@
-import { type ReactNode, useState } from "react";
+import { type CSSProperties, type ReactNode, useState } from "react";
+import { AppShortcuts } from "@/components/layout/app-shortcuts";
 import { SettingsDialog } from "@/components/settings/settings-dialog";
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
@@ -6,7 +7,7 @@ import { UpdateDialog } from "@/components/update/update-dialog";
 import { useUiSettings, useUpdateUiSettings } from "@/hooks/use-ui-settings";
 
 /**
- * アプリ全体の枠。左にサイドバー、残りに画面(`children`)を置く。
+ * アプリ全体の枠。左に浮かぶサイドバー、残りに画面(`children`)を置く。
  * サイドバーの開閉は、前回の状態を設定ファイルから読み、変えるたびに保存する。
  */
 export function AppShell({ children }: { children: ReactNode }) {
@@ -36,9 +37,19 @@ function Shell({
   };
 
   return (
-    <SidebarProvider open={open} onOpenChange={handleOpenChange}>
+    <SidebarProvider
+      open={open}
+      onOpenChange={handleOpenChange}
+      className="h-svh min-h-0 bg-mac-window"
+      style={
+        { "--sidebar-width": "var(--sidebar-panel-width)" } as CSSProperties
+      }
+    >
+      <AppShortcuts />
       <AppSidebar />
-      <SidebarInset className="h-svh min-w-0">{children}</SidebarInset>
+      <SidebarInset className="h-svh min-w-0 bg-mac-window">
+        {children}
+      </SidebarInset>
       <SettingsDialog />
       {/* 開発中(`pnpm tauri dev`)は更新を確認しない。インストールできないため */}
       <UpdateDialog enabled={!import.meta.env.DEV} />

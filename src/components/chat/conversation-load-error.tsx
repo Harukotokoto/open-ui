@@ -1,3 +1,4 @@
+import { CircleAlertIcon } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { errorMessage } from "@/services/ipc";
@@ -13,8 +14,9 @@ export function ConversationLoadError({
   onStartNew,
 }: ConversationLoadErrorProps) {
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-8">
+    <div className="mx-auto w-full max-w-(--chat-column-width) px-5 py-8">
       <Alert variant="destructive">
+        <CircleAlertIcon aria-hidden />
         <AlertTitle>会話を開けませんでした</AlertTitle>
         <AlertDescription>
           <p>{errorMessage(error)}</p>

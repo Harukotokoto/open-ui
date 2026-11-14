@@ -1,21 +1,40 @@
 import type { ReactNode } from "react";
+import {
+  GroupedFormGroup,
+  GroupedFormRow,
+  GroupedFormRowControl,
+  GroupedFormRowDescription,
+  GroupedFormRowLabel,
+  GroupedFormRowTitle,
+  GroupedFormSection,
+  GroupedFormSectionTitle,
+} from "@/components/ui/grouped-form";
 import { cn } from "@/lib/utils";
 
-/** 設定の見出し(「外観」など)と、その下に並べる項目のまとまり。 */
+/**
+ * 設定の見出し(「外観」など)と、その下の角丸のまとまり。
+ * `plain` にすると角丸の箱に入れず、中身(カードの一覧など)をそのまま並べる。
+ */
 export function SettingSection({
   title,
   children,
   className,
+  plain = false,
 }: {
   title: string;
   children: ReactNode;
   className?: string;
+  plain?: boolean;
 }) {
   return (
-    <section className={cn("flex flex-col", className)}>
-      <h3 className="py-2 text-sm">{title}</h3>
-      <div className="flex flex-col">{children}</div>
-    </section>
+    <GroupedFormSection className={className}>
+      <GroupedFormSectionTitle>{title}</GroupedFormSectionTitle>
+      {plain ? (
+        <div className="flex flex-col">{children}</div>
+      ) : (
+        <GroupedFormGroup>{children}</GroupedFormGroup>
+      )}
+    </GroupedFormSection>
   );
 }
 
@@ -38,23 +57,25 @@ export function SettingRow({
   children,
 }: SettingRowProps) {
   return (
-    <div
+    <GroupedFormRow
       className={cn(
-        "flex gap-x-4 gap-y-2 border-b py-3 last:border-b-0",
+        "gap-x-4 gap-y-2",
         stacked
-          ? "flex-col"
-          : "flex-col items-start @md:flex-row @md:items-center @md:justify-between",
+          ? "flex-col items-stretch"
+          : "flex-col items-start @md:flex-row @md:items-center",
       )}
     >
-      <div className="min-w-0 flex-1">
-        <label htmlFor={htmlFor} className="text-sm">
-          {label}
-        </label>
+      <GroupedFormRowLabel className="flex-1">
+        <GroupedFormRowTitle>
+          <label htmlFor={htmlFor}>{label}</label>
+        </GroupedFormRowTitle>
         {description && (
-          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
+          <GroupedFormRowDescription>{description}</GroupedFormRowDescription>
         )}
-      </div>
-      <div className={cn("shrink-0", stacked && "w-full")}>{children}</div>
-    </div>
+      </GroupedFormRowLabel>
+      <GroupedFormRowControl className={cn(stacked && "w-full")}>
+        {children}
+      </GroupedFormRowControl>
+    </GroupedFormRow>
   );
 }

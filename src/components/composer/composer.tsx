@@ -40,11 +40,18 @@ interface ComposerProps {
 }
 
 /**
- * フォーカス時も枠線を変えない(カーソルの点滅で入力中だと分かる)。
- * 送信ボタンが無効(空のとき)でも、入力欄全体を薄く(半透明に)しない。
+ * 入力欄の殻。会話の上に浮かぶガラスのカプセル。
+ * 入力中は常にカーソルがあるので、フォーカスリングは出さない。
  */
+const SHELL_CLASS =
+  "rounded-(--composer-radius) glass-surface backdrop-blur-xl backdrop-saturate-150 transition-[outline-color] outline-2 outline-offset-2 outline-transparent";
+
+/** 殻の中の入力欄。枠と背景は殻に任せる。 */
 const GROUP_CLASS =
-  "has-[[data-slot=input-group-control]:focus-visible]:border-input has-[[data-slot=input-group-control]:focus-visible]:ring-0 has-disabled:bg-transparent has-disabled:opacity-100 dark:has-disabled:bg-input/30";
+  "h-auto rounded-(--composer-radius) bg-transparent shadow-none has-[[data-slot=input-group-control]:focus-visible]:shadow-none";
+
+const TEXTAREA_CLASS =
+  "min-h-0 bg-transparent font-normal text-(length:--chat-font-size) leading-(--chat-line-height) placeholder:text-mac-label-secondary";
 
 /** メッセージの入力欄。Enterで送信、Shift+Enterで改行(設定で逆にできる)。返答中は送信ボタンが停止ボタンになる。 */
 export function Composer({
@@ -122,20 +129,20 @@ export function Composer({
       aria-label="メッセージ"
       rows={1}
       autoFocus={autoFocus}
-      className={cn("placeholder:text-foreground/70", className)}
+      className={cn(TEXTAREA_CLASS, className)}
     />
   );
   const send = <SendButton busy={busy} canSend={canSend} onStop={onStop} />;
-  const attach = (variant: "outline" | "ghost") => (
+  const attach = (
     <AttachButton
-      variant={variant}
       onClick={() => void attachments.pick()}
       disabled={busy || attachments.full}
     />
   );
-  const groupClass = cn(
-    GROUP_CLASS,
-    dragging && "border-ring ring-2 ring-ring/30",
+  // ファイルを重ねているあいだは、落とせる場所だと分かるようにアクセントの点線で囲む
+  const shellClass = cn(
+    SHELL_CLASS,
+    dragging && "outline-dashed outline-mac-accent",
   );
   const preview = (
     <>
@@ -161,18 +168,26 @@ export function Composer({
         {...dropHandlers}
       >
         {preview}
-        <InputGroup className={groupClass}>
-          <InputGroupAddon align="inline-start" className="self-end">
-            {attach("ghost")}
-          </InputGroupAddon>
-          {textarea("max-h-40 min-h-0 px-1 py-2.5 text-[14px] md:text-[14px]")}
-          <InputGroupAddon align="inline-end" className="self-end">
-            <VoiceButton />
-            {send}
-          </InputGroupAddon>
-        </InputGroup>
-        <div className="flex min-h-7 items-center justify-between gap-2 px-2 pt-1">
-          <p className="min-w-0 truncate text-xs text-muted-foreground">
+        <div className={shellClass}>
+          <InputGroup className={GROUP_CLASS}>
+            <InputGroupAddon
+              align="inline-start"
+              className="self-end pb-2.5 has-[>button]:pl-2.5"
+            >
+              {attach}
+            </InputGroupAddon>
+            {textarea("max-h-40 min-h-12 px-1 py-3")}
+            <InputGroupAddon
+              align="inline-end"
+              className="self-end pb-2.5 has-[>button]:pr-2.5"
+            >
+              <VoiceButton />
+              {send}
+            </InputGroupAddon>
+          </InputGroup>
+        </div>
+        <div className="flex min-h-7 items-center justify-between gap-2 pr-0.5 pl-3 pt-1.5">
+          <p className="min-w-0 truncate text-mac-subheadline text-mac-label-secondary">
             {hint}
           </p>
           {actions}
@@ -184,17 +199,19 @@ export function Composer({
   return (
     <form ref={formRef} onSubmit={submit} className="w-full" {...dropHandlers}>
       {preview}
-      <InputGroup className={groupClass}>
-        {textarea("max-h-60 p-3 text-[14px] md:text-[14px]")}
-        <InputGroupAddon align="block-end">
-          {attach("outline")}
-          <div className="ml-auto flex items-center gap-1">
-            {actions}
-            <VoiceButton />
-            {send}
-          </div>
-        </InputGroupAddon>
-      </InputGroup>
+      <div className={shellClass}>
+        <InputGroup className={GROUP_CLASS}>
+          {textarea("max-h-60 min-h-20 px-4 pt-3.5 pb-1")}
+          <InputGroupAddon align="block-end" className="gap-1 px-2 pb-2">
+            {attach}
+            <div className="ml-auto flex items-center gap-1">
+              {actions}
+              <VoiceButton />
+              {send}
+            </div>
+          </InputGroupAddon>
+        </InputGroup>
+      </div>
     </form>
   );
 }

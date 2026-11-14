@@ -9,12 +9,20 @@ interface SendButtonProps {
   onStop: () => void;
 }
 
+/** アクセントカラーの丸いボタン。 */
+const ROUND_CLASS = "size-7 rounded-full [&>svg:not([class*='size-'])]:size-4";
+
 /** 入力欄の送信ボタン。返答中は停止ボタンになる。 */
 export function SendButton({ busy, canSend, onStop }: SendButtonProps) {
   if (busy) {
     return (
-      <InputGroupButton variant="default" size="icon-sm" onClick={onStop}>
-        <SquareIcon className="fill-current" />
+      <InputGroupButton
+        variant="default"
+        size="icon-sm"
+        className={ROUND_CLASS}
+        onClick={onStop}
+      >
+        <SquareIcon className="size-3 fill-current" />
         <span className="sr-only">生成を止める</span>
       </InputGroupButton>
     );
@@ -24,9 +32,10 @@ export function SendButton({ busy, canSend, onStop }: SendButtonProps) {
       type="submit"
       variant="default"
       size="icon-sm"
+      className={ROUND_CLASS}
       disabled={!canSend}
     >
-      <ArrowUpIcon />
+      <ArrowUpIcon strokeWidth={2.5} />
       <span className="sr-only">送信</span>
     </InputGroupButton>
   );

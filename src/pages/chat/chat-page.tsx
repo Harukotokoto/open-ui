@@ -1,6 +1,6 @@
 import { ConversationLoadError } from "@/components/chat/conversation-load-error";
 import { ConversationView } from "@/components/chat/conversation-view";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ChatToolbar } from "@/components/layout/chat-toolbar";
 import { Spinner } from "@/components/ui/spinner";
 import { useChatSessionsHost } from "@/hooks/use-chat-sessions-host";
 import { useConversation } from "@/hooks/use-history";
@@ -47,10 +47,7 @@ export function ChatPage() {
 
   return (
     <div className="flex h-svh min-h-0 flex-col">
-      <header className="flex items-center px-3 py-2">
-        <SidebarTrigger />
-      </header>
-
+      <ChatToolbar conversationId={activeId} onNewChat={startNew} />
       {body}
     </div>
   );

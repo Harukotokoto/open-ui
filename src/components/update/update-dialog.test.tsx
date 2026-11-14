@@ -44,7 +44,7 @@ describe("UpdateDialog", () => {
     expect(
       await screen.findByText("新しいバージョンがあります"),
     ).toBeInTheDocument();
-    expect(screen.getByText(/v0\.1\.0 から v0\.2\.0/)).toBeInTheDocument();
+    expect(screen.getByText(/v0\.1\.0からv0\.2\.0/)).toBeInTheDocument();
   });
 
   it("最新なら何も出さない", async () => {

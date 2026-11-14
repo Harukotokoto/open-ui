@@ -47,7 +47,13 @@ export function ProfileCard({
   const { data: keyStatus } = useKeyStatus(editing ? profile.id : undefined);
 
   return (
-    <Card size="sm" role="group" aria-label={profile.name}>
+    // 「外観」などの設定項目と同じ、枠線のない角丸の面にそろえる(Cardの枠線・角丸・白地は上書き)
+    <Card
+      size="sm"
+      role="group"
+      aria-label={profile.name}
+      className="rounded-mac-group! bg-mac-group! shadow-none!"
+    >
       <CardHeader>
         <CardTitle className="flex min-w-0 items-center gap-2">
           <span className="truncate">{profile.name}</span>

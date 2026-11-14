@@ -84,6 +84,9 @@ export const commands = {
 };
 
 /* Types */
+/**  ボタンや選択中の項目に使う強調色。macOSのアクセントカラーと同じ選択肢。 */
+export type AccentColor = "blue" | "purple" | "pink" | "red" | "orange" | "yellow" | "green" | "graphite";
+
 /**  IPCコマンドが返すエラー。 */
 export type AppError = {
 	kind: AppErrorKind,
@@ -324,6 +327,8 @@ export type UiSettings = {
 	theme?: Theme,
 	/**  入力欄でShift+Enterを押したときの動き */
 	shiftEnter?: ShiftEnterBehavior,
+	/**  アクセントカラー */
+	accent?: AccentColor,
 };
 
 /* Tauri Specta runtime */

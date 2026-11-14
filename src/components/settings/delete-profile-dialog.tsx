@@ -52,12 +52,16 @@ export function DeleteProfileDialog({
         if (!open) close();
       }}
     >
-      <AlertDialogContent>
+      <AlertDialogContent className="data-[size=default]:max-w-[300px]!">
         <AlertDialogHeader>
-          <AlertDialogTitle>この接続先を削除しますか?</AlertDialogTitle>
-          <AlertDialogDescription>
-            「{profile?.name}
-            」を削除します。保存したAPIキーも消え、元に戻せません。
+          <AlertDialogTitle>この接続先を削除しますか？</AlertDialogTitle>
+          <AlertDialogDescription className="text-mac-callout!">
+            <span className="line-clamp-3 break-words">
+              「{profile?.name}」を削除します。
+            </span>
+            <span className="block">
+              保存したAPIキーも消え、元に戻せません。
+            </span>
           </AlertDialogDescription>
         </AlertDialogHeader>
         {remove.isError && (
